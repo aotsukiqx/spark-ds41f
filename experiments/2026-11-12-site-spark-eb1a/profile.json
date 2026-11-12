@@ -1,0 +1,33 @@
+{
+  "extends": {
+    "config": "config/cluster.json",
+    "shape": "tp4-switched"
+  },
+  "set": {
+    "host": {
+      "kernel": {
+        "release": "7.0.0-1019-nvidia",
+        "page_size": 4096,
+        "memory_saver_required": false
+      }
+    },
+    "model": "v41-flash-1017-local",
+    "models": {
+      "v41-flash-1017-local": {
+        "hub": "{home}/nvmodels",
+        "snapshot": "DeepSeek-V4.1-Flash-1017",
+        "notes": "Node-local weights at {home}/nvmodels/DeepSeek-V4.1-Flash-1017 on every node, mounted read-only at /hub; HF_HUB_OFFLINE=1, so a start downloads nothing."
+      }
+    },
+    "deployment": {
+      "path": "{home}/nvmodels/spark-ds41f"
+    }
+  },
+  "serve_options": {
+    "--max-model-len": "716800"
+  },
+  "unset": [
+    "glp"
+  ],
+  "notes": "spark-eb1a site deployment of spark-ds41f-1107: four nodes through the 200 GbE switch, stock 4 KiB kernel, no memory saver, 716,800-token requests (700 Ki), 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool (the startup line's 16.02 full contexts at 716,800). The stock served name only: the recipe's GLP steering file is not in the nodes' hub caches and HF_HUB_OFFLINE=1 forbids fetching it."
+}

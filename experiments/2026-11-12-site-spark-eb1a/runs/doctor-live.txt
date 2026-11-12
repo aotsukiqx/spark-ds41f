@@ -1,0 +1,11 @@
+WARN: recommend: install 64kb page kernel (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: sudo scripts/install-64k-kernel
+WARN: recommend: install memory-saver (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: scripts/install-memory-saver
+WARN: recommend: configure nvme sleep settings (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: sudo scripts/configure-nvme-sleep
+WARN: recommend: disable nvme interrupt coalescing (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: sudo scripts/disable-nvme-coalescing
+WARN: recommend: management port off wireless (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: sudo nmcli radio wifi off
+WARN: recommend: install fan-control (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: scripts/install-fan-control
+WARN: recommend: disable idle desktop services and boot splash (spark-eb1a, spark-141e, spark-a89f, spark-2fe7) -> run: scripts/host-recovery apply
+ERROR: spark-eb1a: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-141e: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-a89f: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-2fe7: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped

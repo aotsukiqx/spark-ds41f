@@ -1,0 +1,211 @@
+WARN: spark-eb1a: 64 KiB package versions differ: linux-tools-7.0.0-1019-nvidia-64k, linux-image-7.0.0-1019-nvidia-64k, linux-modules-7.0.0-1019-nvidia-64k, linux-headers-7.0.0-1019-nvidia-64k, linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: missing or empty /boot/vmlinuz-7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: missing or empty /boot/initrd.img-7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: missing or empty /boot/config-7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: candidate headers or CONFIG_ARM64_64K_PAGES=y missing
+WARN: spark-eb1a: candidate cpupower tool is missing; nv-cpu-governor.service cannot run on that kernel
+WARN: spark-eb1a: nvidia is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: candidate nvidia driver version differs from 580.178.04
+WARN: spark-eb1a: nvidia_uvm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: candidate nvidia_uvm driver version differs from 580.178.04
+WARN: spark-eb1a: nvidia_drm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: candidate nvidia_drm driver version differs from 580.178.04
+WARN: spark-eb1a: mlx5_core is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: mlx5_ib is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: dgx_ec_fan_control is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: fan-control DKMS is not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: Secure Boot is enabled but the candidate fan signature/enrolled key is unverified
+WARN: spark-eb1a: candidate is missing from GRUB
+WARN: spark-eb1a: normal boot is not explicitly pinned to 7.0.0-1019-nvidia-64k (GRUB default 'Advanced options for DGX OS GNU/Linux>DGX OS GNU/Linux, with Linux 7.0.0-1019-nvidia')
+WARN: spark-eb1a: memory-saver DKMS 0.4.1 is missing or not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-eb1a: candidate UVM does not select the expected memory-saver DKMS module
+WARN: spark-eb1a: memory-saver module has no readable Secure Boot signer
+WARN: spark-eb1a: the active console (tty1) is in graphics mode, so an attached display shows no text; run scripts/host-recovery apply on the node (it switches the console to text mode now and removes splash from later boots)
+WARN: spark-eb1a: the kernel command line has splash, which leaves the console in graphics mode after boot; run scripts/host-recovery apply on the node (it installs /etc/default/grub.d/zz-spark-console.cfg and runs update-grub), then reboot with the service stopped
+WARN: spark-eb1a: bluetooth.service, cups.service, cups.socket, cups.path, cups-browsed.service, snapd.service, snapd.socket, snapd.seeded.service, snapd.snap-repair.timer, fwupd-refresh.timer, dgx-dashboard.service, dgx-dashboard-admin.service enabled or running, though unused on a headless inference node; run sudo systemctl disable --now bluetooth.service cups.service cups.socket cups.path cups-browsed.service snapd.service snapd.socket snapd.seeded.service snapd.snap-repair.timer fwupd-refresh.timer dgx-dashboard.service dgx-dashboard-admin.service (scripts/host-recovery apply does the same)
+WARN: spark-eb1a: NVMe interrupt coalescing is on (nvme0=0x00000107), but this site keeps it off; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-eb1a: nvidia-nvme-interrupt-coalescing.service is enabled and turns coalescing back on at the next boot; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-eb1a: nvme0 sleeps in PS3 (11 ms to wake) after 100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 5 ms or more before 1000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-eb1a: nvme0 sleeps in PS4 (46 ms to wake) after 2100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 20 ms or more before 30000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-eb1a: Wi-Fi radio is enabled; run nmcli radio wifi off to keep the management port off wireless
+WARN: spark-eb1a: DKMS dgx-spark-fan-control is not installed for 7.0.0-1019-nvidia; serving does not need it, bench does; run sudo dkms autoinstall -k 7.0.0-1019-nvidia
+WARN: spark-141e: 64 KiB package versions differ: linux-tools-7.0.0-1019-nvidia-64k, linux-image-7.0.0-1019-nvidia-64k, linux-modules-7.0.0-1019-nvidia-64k, linux-headers-7.0.0-1019-nvidia-64k, linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+WARN: spark-141e: missing or empty /boot/vmlinuz-7.0.0-1019-nvidia-64k
+WARN: spark-141e: missing or empty /boot/initrd.img-7.0.0-1019-nvidia-64k
+WARN: spark-141e: missing or empty /boot/config-7.0.0-1019-nvidia-64k
+WARN: spark-141e: candidate headers or CONFIG_ARM64_64K_PAGES=y missing
+WARN: spark-141e: candidate cpupower tool is missing; nv-cpu-governor.service cannot run on that kernel
+WARN: spark-141e: nvidia is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: candidate nvidia driver version differs from 580.178.04
+WARN: spark-141e: nvidia_uvm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: candidate nvidia_uvm driver version differs from 580.178.04
+WARN: spark-141e: nvidia_drm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: candidate nvidia_drm driver version differs from 580.178.04
+WARN: spark-141e: mlx5_core is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: mlx5_ib is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: dgx_ec_fan_control is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: fan-control DKMS is not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: Secure Boot is enabled but the candidate fan signature/enrolled key is unverified
+WARN: spark-141e: candidate is missing from GRUB
+WARN: spark-141e: normal boot is not explicitly pinned to 7.0.0-1019-nvidia-64k (GRUB default 'Advanced options for DGX OS GNU/Linux>DGX OS GNU/Linux, with Linux 7.0.0-1019-nvidia')
+WARN: spark-141e: memory-saver DKMS 0.4.1 is missing or not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-141e: candidate UVM does not select the expected memory-saver DKMS module
+WARN: spark-141e: memory-saver module has no readable Secure Boot signer
+WARN: spark-141e: the active console (tty1) is in graphics mode, so an attached display shows no text; run scripts/host-recovery apply on the node (it switches the console to text mode now and removes splash from later boots)
+WARN: spark-141e: the kernel command line has splash, which leaves the console in graphics mode after boot; run scripts/host-recovery apply on the node (it installs /etc/default/grub.d/zz-spark-console.cfg and runs update-grub), then reboot with the service stopped
+WARN: spark-141e: bluetooth.service, cups.service, cups.socket, cups.path, cups-browsed.service, snapd.service, snapd.socket, snapd.seeded.service, snapd.snap-repair.timer, fwupd-refresh.timer, dgx-dashboard.service, dgx-dashboard-admin.service enabled or running, though unused on a headless inference node; run sudo systemctl disable --now bluetooth.service cups.service cups.socket cups.path cups-browsed.service snapd.service snapd.socket snapd.seeded.service snapd.snap-repair.timer fwupd-refresh.timer dgx-dashboard.service dgx-dashboard-admin.service (scripts/host-recovery apply does the same)
+WARN: spark-141e: NVMe interrupt coalescing is on (nvme0=0x00000107), but this site keeps it off; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-141e: nvidia-nvme-interrupt-coalescing.service is enabled and turns coalescing back on at the next boot; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-141e: nvme0 sleeps in PS3 (11 ms to wake) after 100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 5 ms or more before 1000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-141e: nvme0 sleeps in PS4 (46 ms to wake) after 2100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 20 ms or more before 30000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-141e: Wi-Fi radio is enabled; run nmcli radio wifi off to keep the management port off wireless
+WARN: spark-141e: DKMS dgx-spark-fan-control is not installed for 7.0.0-1019-nvidia; serving does not need it, bench does; run sudo dkms autoinstall -k 7.0.0-1019-nvidia
+WARN: spark-a89f: 64 KiB package versions differ: linux-tools-7.0.0-1019-nvidia-64k, linux-image-7.0.0-1019-nvidia-64k, linux-modules-7.0.0-1019-nvidia-64k, linux-headers-7.0.0-1019-nvidia-64k, linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+WARN: spark-a89f: missing or empty /boot/vmlinuz-7.0.0-1019-nvidia-64k
+WARN: spark-a89f: missing or empty /boot/initrd.img-7.0.0-1019-nvidia-64k
+WARN: spark-a89f: missing or empty /boot/config-7.0.0-1019-nvidia-64k
+WARN: spark-a89f: candidate headers or CONFIG_ARM64_64K_PAGES=y missing
+WARN: spark-a89f: candidate cpupower tool is missing; nv-cpu-governor.service cannot run on that kernel
+WARN: spark-a89f: nvidia is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: candidate nvidia driver version differs from 580.178.04
+WARN: spark-a89f: nvidia_uvm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: candidate nvidia_uvm driver version differs from 580.178.04
+WARN: spark-a89f: nvidia_drm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: candidate nvidia_drm driver version differs from 580.178.04
+WARN: spark-a89f: mlx5_core is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: mlx5_ib is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: dgx_ec_fan_control is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: fan-control DKMS is not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: Secure Boot is enabled but the candidate fan signature/enrolled key is unverified
+WARN: spark-a89f: candidate is missing from GRUB
+WARN: spark-a89f: normal boot is not explicitly pinned to 7.0.0-1019-nvidia-64k (GRUB default 'Advanced options for DGX OS GNU/Linux>DGX OS GNU/Linux, with Linux 7.0.0-1019-nvidia')
+WARN: spark-a89f: memory-saver DKMS 0.4.1 is missing or not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-a89f: candidate UVM does not select the expected memory-saver DKMS module
+WARN: spark-a89f: memory-saver module has no readable Secure Boot signer
+WARN: spark-a89f: the active console (tty1) is in graphics mode, so an attached display shows no text; run scripts/host-recovery apply on the node (it switches the console to text mode now and removes splash from later boots)
+WARN: spark-a89f: the kernel command line has splash, which leaves the console in graphics mode after boot; run scripts/host-recovery apply on the node (it installs /etc/default/grub.d/zz-spark-console.cfg and runs update-grub), then reboot with the service stopped
+WARN: spark-a89f: bluetooth.service, cups.service, cups.socket, cups.path, cups-browsed.service, snapd.service, snapd.socket, snapd.seeded.service, snapd.snap-repair.timer, fwupd-refresh.timer, dgx-dashboard.service, dgx-dashboard-admin.service enabled or running, though unused on a headless inference node; run sudo systemctl disable --now bluetooth.service cups.service cups.socket cups.path cups-browsed.service snapd.service snapd.socket snapd.seeded.service snapd.snap-repair.timer fwupd-refresh.timer dgx-dashboard.service dgx-dashboard-admin.service (scripts/host-recovery apply does the same)
+WARN: spark-a89f: NVMe interrupt coalescing is on (nvme0=0x00000107), but this site keeps it off; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-a89f: nvidia-nvme-interrupt-coalescing.service is enabled and turns coalescing back on at the next boot; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-a89f: nvme0 sleeps in PS3 (11 ms to wake) after 100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 5 ms or more before 1000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-a89f: nvme0 sleeps in PS4 (46 ms to wake) after 2100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 20 ms or more before 30000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-a89f: Wi-Fi radio is enabled; run nmcli radio wifi off to keep the management port off wireless
+WARN: spark-a89f: DKMS dgx-spark-fan-control is not installed for 7.0.0-1019-nvidia; serving does not need it, bench does; run sudo dkms autoinstall -k 7.0.0-1019-nvidia
+WARN: spark-2fe7: 64 KiB package versions differ: linux-tools-7.0.0-1019-nvidia-64k, linux-image-7.0.0-1019-nvidia-64k, linux-modules-7.0.0-1019-nvidia-64k, linux-headers-7.0.0-1019-nvidia-64k, linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: missing or empty /boot/vmlinuz-7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: missing or empty /boot/initrd.img-7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: missing or empty /boot/config-7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: candidate headers or CONFIG_ARM64_64K_PAGES=y missing
+WARN: spark-2fe7: candidate cpupower tool is missing; nv-cpu-governor.service cannot run on that kernel
+WARN: spark-2fe7: nvidia is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: candidate nvidia driver version differs from 580.178.04
+WARN: spark-2fe7: nvidia_uvm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: candidate nvidia_uvm driver version differs from 580.178.04
+WARN: spark-2fe7: nvidia_drm is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: candidate nvidia_drm driver version differs from 580.178.04
+WARN: spark-2fe7: mlx5_core is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: mlx5_ib is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: dgx_ec_fan_control is not prepared for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: fan-control DKMS is not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: Secure Boot is enabled but the candidate fan signature/enrolled key is unverified
+WARN: spark-2fe7: candidate is missing from GRUB
+WARN: spark-2fe7: normal boot is not explicitly pinned to 7.0.0-1019-nvidia-64k (GRUB default 'Advanced options for DGX OS GNU/Linux>DGX OS GNU/Linux, with Linux 7.0.0-1019-nvidia')
+WARN: spark-2fe7: memory-saver DKMS 0.4.1 is missing or not installed for 7.0.0-1019-nvidia-64k
+WARN: spark-2fe7: candidate UVM does not select the expected memory-saver DKMS module
+WARN: spark-2fe7: memory-saver module has no readable Secure Boot signer
+WARN: spark-2fe7: the active console (tty1) is in graphics mode, so an attached display shows no text; run scripts/host-recovery apply on the node (it switches the console to text mode now and removes splash from later boots)
+WARN: spark-2fe7: the kernel command line has splash, which leaves the console in graphics mode after boot; run scripts/host-recovery apply on the node (it installs /etc/default/grub.d/zz-spark-console.cfg and runs update-grub), then reboot with the service stopped
+WARN: spark-2fe7: bluetooth.service, cups.service, cups.socket, cups.path, cups-browsed.service, snapd.service, snapd.socket, snapd.seeded.service, snapd.snap-repair.timer, fwupd-refresh.timer, dgx-dashboard.service, dgx-dashboard-admin.service enabled or running, though unused on a headless inference node; run sudo systemctl disable --now bluetooth.service cups.service cups.socket cups.path cups-browsed.service snapd.service snapd.socket snapd.seeded.service snapd.snap-repair.timer fwupd-refresh.timer dgx-dashboard.service dgx-dashboard-admin.service (scripts/host-recovery apply does the same)
+WARN: spark-2fe7: NVMe interrupt coalescing is on (nvme0=0x00000107), but this site keeps it off; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-2fe7: nvidia-nvme-interrupt-coalescing.service is enabled and turns coalescing back on at the next boot; run sudo systemctl mask --now nvidia-nvme-interrupt-coalescing.service && sudo /usr/bin/nvidia-nvme-interrupt-coalescing.sh disable
+WARN: spark-2fe7: nvme0 sleeps in PS3 (11 ms to wake) after 100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 5 ms or more before 1000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-2fe7: nvme0 sleeps in PS4 (46 ms to wake) after 2100 ms idle, and the Engram reader's first read after a pause waits for it (no state of 20 ms or more before 30000 ms idle); set nvme_core apst_primary_timeout_ms=2000 and apst_secondary_timeout_ms=60000: now with echo 2000 | sudo tee /sys/module/nvme_core/parameters/apst_primary_timeout_ms, echo 60000 | sudo tee /sys/module/nvme_core/parameters/apst_secondary_timeout_ms and rewriting each controller's power/pm_qos_latency_tolerance_us to re-arm APST; at boot with 'options nvme_core apst_primary_timeout_ms=2000 apst_secondary_timeout_ms=60000' in /etc/modprobe.d/nvme-apst.conf and sudo update-initramfs -u
+WARN: spark-2fe7: Wi-Fi radio is enabled; run nmcli radio wifi off to keep the management port off wireless
+WARN: spark-2fe7: DKMS dgx-spark-fan-control is not installed for 7.0.0-1019-nvidia; serving does not need it, bench does; run sudo dkms autoinstall -k 7.0.0-1019-nvidia
+WARN: Kernel corrections (not executed):
+  spark-eb1a: sudo apt-get install linux-tools-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-image-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-headers-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+  spark-eb1a: sudo dkms autoinstall -k 7.0.0-1019-nvidia-64k
+  spark-eb1a: sudo update-grub
+  spark-eb1a: restore the configured entry in /etc/default/grub.d/zz-spark-kernel-trial.cfg, then sudo update-grub
+  spark-eb1a: register the pinned source using docs/memory-profiles.md#install-memory-saver; then sudo dkms install -m dgx-spark-memory-saver -v 0.4.1 -k 7.0.0-1019-nvidia-64k. For a loaded-module mismatch, stop GPU clients and reboot into the configured kernel.
+  spark-141e: sudo apt-get install linux-tools-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-image-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-headers-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+  spark-141e: sudo dkms autoinstall -k 7.0.0-1019-nvidia-64k
+  spark-141e: sudo update-grub
+  spark-141e: restore the configured entry in /etc/default/grub.d/zz-spark-kernel-trial.cfg, then sudo update-grub
+  spark-141e: register the pinned source using docs/memory-profiles.md#install-memory-saver; then sudo dkms install -m dgx-spark-memory-saver -v 0.4.1 -k 7.0.0-1019-nvidia-64k. For a loaded-module mismatch, stop GPU clients and reboot into the configured kernel.
+  spark-a89f: sudo apt-get install linux-tools-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-image-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-headers-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+  spark-a89f: sudo dkms autoinstall -k 7.0.0-1019-nvidia-64k
+  spark-a89f: sudo update-grub
+  spark-a89f: restore the configured entry in /etc/default/grub.d/zz-spark-kernel-trial.cfg, then sudo update-grub
+  spark-a89f: register the pinned source using docs/memory-profiles.md#install-memory-saver; then sudo dkms install -m dgx-spark-memory-saver -v 0.4.1 -k 7.0.0-1019-nvidia-64k. For a loaded-module mismatch, stop GPU clients and reboot into the configured kernel.
+  spark-2fe7: sudo apt-get install linux-tools-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-image-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-headers-7.0.0-1019-nvidia-64k=7.0.0-1019.19~24.04.2 linux-modules-nvidia-580-open-7.0.0-1019-nvidia-64k
+  spark-2fe7: sudo dkms autoinstall -k 7.0.0-1019-nvidia-64k
+  spark-2fe7: sudo update-grub
+  spark-2fe7: restore the configured entry in /etc/default/grub.d/zz-spark-kernel-trial.cfg, then sudo update-grub
+  spark-2fe7: register the pinned source using docs/memory-profiles.md#install-memory-saver; then sudo dkms install -m dgx-spark-memory-saver -v 0.4.1 -k 7.0.0-1019-nvidia-64k. For a loaded-module mismatch, stop GPU clients and reboot into the configured kernel.
+ERROR: spark-eb1a: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-141e: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-a89f: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+ERROR: spark-2fe7: nvidia-drm fbdev is N, expected Y (an attached display gets no text console); remove the nvidia-drm fbdev=0 option (grep -rn fbdev /etc/modprobe.d), run sudo update-initramfs -u, and reboot with the service stopped
+benchmarking http://192.168.2.23:8000 (config/cluster-eb1a.local.json); writing /home/colin/nvmodels/acceptance-20261112T125508Z/bench/bench.json
+fan curve: spark-eb1a not installed, spark-141e not installed, spark-a89f not installed, spark-2fe7 not installed
+WARN: spark-eb1a: dgx-fan-control.service is not installed (see doctor --live)
+WARN: spark-141e: dgx-fan-control.service is not installed (see doctor --live)
+WARN: spark-a89f: dgx-fan-control.service is not installed (see doctor --live)
+WARN: spark-2fe7: dgx-fan-control.service is not installed (see doctor --live)
+quality:
+  quality 1/5: pass
+  quality 2/5: pass
+  quality 3/5: pass
+  quality 4/5: pass
+  quality 5/5: pass
+decode:
+  warmup: one discarded sample per point
+  round 1: code-c1 tps ±-%, code-c16 tps ±-%, code-c2 tps ±-%, code-c4 tps ±-%, code-c8 tps ±-%, prose-c1 tps ±-%, prose-c16 tps ±-%, prose-c2 tps ±-%, prose-c4 tps ±-%, prose-c8 tps ±-%
+  round 2: code-c1 tps ±22.85%, code-c16 tps ±13.95%, code-c2 tps ±57.91%, code-c4 tps ±87.27%, code-c8 tps ±157.39%, prose-c1 tps ±21.73%, prose-c16 tps ±92.18%, prose-c2 tps ±9.38%, prose-c4 tps ±128.12%, prose-c8 tps ±92.47%
+  round 3: code-c1 tps ±4.54%, code-c16 tps ±27.09%, code-c2 tps ±12.91%, code-c4 tps ±21.84%, code-c8 tps ±32.3%, prose-c1 tps ±4.43%, prose-c16 tps ±22.55%, prose-c2 tps ±22.98%, prose-c4 tps ±26.43%, prose-c8 tps ±20.06%
+  round 4: all points converged
+quality: LRU 5/5
+decode (aggregate tok/s, 95% CI):
+  prose-c1                72.9 ± 2.5% n=4   ref     73.3   -0.6% [-3.0, +1.8] same
+  prose-c2               130.0 ±13.3% n=4   ref    128.4   +1.2% [-15.0, +17.5] same
+  prose-c4               226.4 ±14.8% n=4   ref    212.8   +6.4% [-9.4, +22.3] same
+  prose-c8               383.2 ±16.1% n=4   ref    396.1   -3.3% [-19.3, +12.8] same
+  prose-c16              577.6 ±15.6% n=4   ref    587.0   -1.6% [-16.2, +13.0] same
+  code-c1                 93.1 ± 3.1% n=4   ref     95.0   -2.0% [-5.1, +1.1] same
+  code-c2                153.1 ± 6.8% n=4   ref    149.8   +2.1% [-11.5, +15.8] same
+  code-c4                242.5 ±11.9% n=4   ref    266.9   -9.1% [-21.4, +3.1] same
+  code-c8                440.2 ±17.0% n=4   ref    490.1  -10.2% [-25.0, +4.7] same
+  code-c16               656.0 ±14.2% n=4   ref    677.3   -3.2% [-22.6, +16.3] same
+decode primaries (mean ±95% CI): step ms | accepted/verified | tokens/step || tok/s measured aggregate / decode window | derived
+  prose-c1               27.73 ±1.7% |    0.471 ±8.7% |    2.125 ±2.4% ||     72.9 ±2.5% /     76.7 ±2.7% |     76.7 ±2.7%
+  prose-c2              30.22 ±16.8% |    0.479 ±5.9% |    2.101 ±2.7% ||   130.0 ±13.3% /   140.1 ±14.2% |   140.1 ±14.2%
+  prose-c4              33.42 ±19.3% |    0.520 ±3.7% |    2.013 ±3.5% ||   226.4 ±14.8% /   243.1 ±15.8% |   243.1 ±15.8%
+  prose-c8              40.52 ±20.4% |    0.509 ±5.1% |    2.062 ±2.9% ||   383.2 ±16.1% /   411.4 ±17.4% |   411.4 ±17.4%
+  prose-c16             51.49 ±15.9% |    0.560 ±4.5% |    1.975 ±2.2% ||   577.6 ±15.6% /   618.6 ±17.0% |   618.6 ±17.0%
+  code-c1                30.53 ±2.5% |    0.615 ±4.3% |    3.042 ±1.1% ||     93.1 ±3.1% /     99.7 ±3.5% |     99.7 ±3.5%
+  code-c2                35.45 ±5.8% |    0.662 ±1.8% |    2.971 ±2.1% ||    153.1 ±6.8% /    167.9 ±7.5% |    167.9 ±7.5%
+  code-c4               44.22 ±13.7% |    0.652 ±3.9% |    2.891 ±2.6% ||   242.5 ±11.9% /   262.9 ±13.1% |   262.9 ±13.1%
+  code-c8               47.14 ±18.4% |    0.664 ±3.7% |    2.805 ±2.4% ||   440.2 ±17.0% /   480.8 ±18.5% |   480.8 ±18.5%
+  code-c16              60.57 ±16.3% |    0.712 ±2.8% |    2.681 ±2.4% ||   656.0 ±14.2% /   713.4 ±15.6% |   713.4 ±15.6%
+step time (ms, lower is better; independent of acceptance; concurrent points are decode-window estimates):
+  prose-c1               27.73 ± 1.7% n=4   ref    27.41   +1.2% [-1.5, +3.8] same
+  prose-c2               30.22 ±16.8% n=4   ref    31.07   -2.7% [-21.6, +16.1] same
+  prose-c4               33.42 ±19.3% n=4   ref    36.55   -8.6% [-26.4, +9.3] same
+  prose-c8               40.52 ±20.4% n=4   ref    39.00   +3.9% [-17.3, +25.1] same
+  prose-c16              51.49 ±15.9% n=4   ref    51.57   -0.2% [-15.4, +15.1] same
+  code-c1                30.53 ± 2.5% n=4   ref    29.85   +2.3% [-0.5, +5.0] same
+  code-c2                35.45 ± 5.8% n=4   ref    36.63   -3.2% [-19.7, +13.3] same
+  code-c4                44.22 ±13.7% n=4   ref    39.66  +11.5% [-6.3, +29.2] same
+  code-c8                47.14 ±18.4% n=4   ref    42.38  +11.2% [-9.5, +32.0] same
+  code-c16               60.57 ±16.3% n=4   ref    59.38   +2.0% [-20.8, +24.8] same
+spark-eb1a: min MemAvailable 22.04 GiB, swap growth 0.0 GiB
+spark-141e: min MemAvailable 23.86 GiB, swap growth 0.0 GiB
+spark-a89f: min MemAvailable 23.9 GiB, swap growth 0.0 GiB
+spark-2fe7: min MemAvailable 23.89 GiB, swap growth 0.0 GiB
+spark-eb1a: GPU max 65.0 C (29.0 C below its limit at the closest), board max 90.3 C, power max 30.06 W, thermal slowdown 0.0 ms
+spark-141e: GPU max 66.0 C (27.0 C below its limit at the closest), board max 84.0 C, power max 28.11 W, thermal slowdown 0.0 ms
+spark-a89f: GPU max 64.0 C (31.0 C below its limit at the closest), board max 81.7 C, power max 31.6 W, thermal slowdown 0.0 ms
+spark-2fe7: GPU max 65.0 C (29.0 C below its limit at the closest), board max 85.4 C, power max 31.11 W, thermal slowdown 0.0 ms
+reference: manifests/benchmarks/2026-11-07-spark-ds41f-1107-switched.json
+report: /home/colin/nvmodels/acceptance-20261112T125508Z/bench/bench.json

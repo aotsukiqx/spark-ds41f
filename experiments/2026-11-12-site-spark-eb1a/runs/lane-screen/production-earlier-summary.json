@@ -1,0 +1,55 @@
+{
+ "arm": "lanes1",
+ "ok": 8,
+ "requests": 8,
+ "wall_s": 1085.9,
+ "peak_running": 3.0,
+ "peak_kv": 0.19204963421041998,
+ "preemptions_from_probe": 0,
+ "preemptions_from_counter": 0.0,
+ "prompt_tokens": 5599999.0,
+ "generation_tokens": 24000.0,
+ "steps": 3655.0,
+ "prefill_tps_over_wall": 5157.0,
+ "ttft_s": [
+  112.802,
+  250.345,
+  387.803,
+  524.077,
+  661.023,
+  798.315,
+  935.505,
+  1071.257
+ ],
+ "ttft_gaps_s": [
+  137.5,
+  137.5,
+  136.3,
+  136.9,
+  137.3,
+  137.2,
+  135.8
+ ],
+ "tail_ttft_s": 1071.3,
+ "mem_min_gib": 19,
+ "mixed": {
+  "calibrated_prompt_tokens": 699999,
+  "short_requests": [
+   {
+    "label": "t+20s",
+    "ttft_s": 2.97
+   },
+   {
+    "label": "t+50s",
+    "ttft_s": 4.62
+   },
+   {
+    "label": "t+80s",
+    "ttft_s": 3.52
+   }
+  ],
+  "long": {
+   "long_started": 78292.957
+  }
+ }
+}

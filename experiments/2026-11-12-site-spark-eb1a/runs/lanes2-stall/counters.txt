@@ -1,0 +1,6 @@
+vllm:num_requests_running{engine="0",model_name="deepseek-v4.1-flash"} 0.0
+vllm:num_requests_waiting{engine="0",model_name="deepseek-v4.1-flash"} 0.0
+vllm:kv_cache_usage_perc{engine="0",model_name="deepseek-v4.1-flash"} 0.0
+vllm:prompt_tokens_total{engine="0",model_name="deepseek-v4.1-flash"} 0.0
+vllm:generation_tokens_total{engine="0",model_name="deepseek-v4.1-flash"} 0.0
+vllm:iteration_tokens_total_count{engine="0",model_name="deepseek-v4.1-flash"} 0.0

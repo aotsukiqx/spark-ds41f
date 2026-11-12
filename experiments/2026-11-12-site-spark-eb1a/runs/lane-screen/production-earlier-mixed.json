@@ -1,0 +1,20 @@
+{
+ "calibrated_prompt_tokens": 699999,
+ "short_requests": [
+  {
+   "label": "t+20s",
+   "ttft_s": 2.97
+  },
+  {
+   "label": "t+50s",
+   "ttft_s": 4.62
+  },
+  {
+   "label": "t+80s",
+   "ttft_s": 3.52
+  }
+ ],
+ "long": {
+  "long_started": 78292.957
+ }
+}

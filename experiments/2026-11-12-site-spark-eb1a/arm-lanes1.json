@@ -1,0 +1,10 @@
+{
+  "extends": {
+    "config": "config/cluster-eb1a.local.json"
+  },
+  "serve_options": {
+    "--max-parallel-prefills": "1",
+    "--prefill-yield": "off"
+  },
+  "notes": "Prefill-lane screen arm: 1 lane(s) with --prefill-yield off, over the site profile. The pinned vLLM refuses prefill yield beside more than one lane (prefill_yield replaces prefill lanes, vllm/config/scheduler.py), so every lane arm, including the one-lane control, turns the yield off; the production profile keeps both at the recipe's values. The profile the arm extends is the site's ignored file, created by copying this folder's profile.json to it (see README, Commands)."
+}
