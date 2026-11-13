@@ -227,7 +227,7 @@
     "{\"profiler\":\"torch\",\"torch_profiler_dir\":\"/cache/profiles/d1107\",\"torch_profiler_with_stack\":false,\"torch_profiler_record_shapes\":true,\"ignore_frontend\":true,\"torch_profiler_use_gzip\":true}"
   ],
   "distributed": {
-    "master_addr": "10.0.1.71",
+    "master_addr": "192.168.2.23",
     "master_port": "9999"
   },
   "deployment": {
