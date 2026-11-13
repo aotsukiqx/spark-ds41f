@@ -198,13 +198,16 @@ collectives, and DSpark drafting.
    an explicit `cudaMemcpyAsync` from the producer output tensor into
    `comm_buf` (116 launches per step). Writing final BF16 outputs directly into
    the registered RoCE send buffer removes the staging copy.
-   *Scope 2026-11-13:* the staging copy lives inside the pinned
-   sparknet/b12x runtime (`b12x.comm.roce`, reached through
-   `CudaCommunicator`'s `custom_all_reduce`), not in a vLLM-side wrapper, so this
-   needs a sparknet or b12x change that exposes the registered buffer plus the
-   producer kernels in `wo.py` / `moe.py` writing into it — not a patch-series
-   edit alone. It is also the one lever that removes GPU work rather than idle
-   time, so it keeps its ceiling.
+   *Closed 2026-11-13:* the runtime has **one** send region per peer, sized for
+   the largest message (live: `SPARKNET_ROCE_ALLREDUCE_CAPACITY_BYTES=2097152`
+   and `SPARKNET_ROCE_ALLGATHER_MAX_BYTES=4194304`, so a 4 MiB slot reused by
+   every collective; `roce_oneshot.py` lines ~372-375). The copy a producer would
+   skip is 196 KB at ~1 TB/s, ~23 µs a step (0.05%), while all device copies in
+   the c8 trace total 0.017 ms; each of the 101-135 collectives costs 114 µs of
+   ring latency, not copy. Per-collective slots would need 116 × 4 MiB = 464 MiB
+   of pinned host memory. What is left is a dependency hop bounded at ~0.2-0.5%,
+   below both site CIs. Reopens only on a runtime with a slot ring.
+   (`experiments/2026-11-13-upstream-primitives/item2-direct-writes.md`)
 3. **Q-B and indexer Q-B tile-contiguous weight layout.** Both projections win
    in isolation but trail by 3–5% per call in serving when reading row-major
    weights. Screen a tile-contiguous weight layout for the decode projections,
