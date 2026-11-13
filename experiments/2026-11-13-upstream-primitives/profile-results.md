@@ -42,3 +42,32 @@ Artifacts: `profile_drive.py` (one profiled round plus its unprofiled control),
 `analyze_trace.py` (kernel union, idle share, gap attribution), and the two
 traces, kept node-side at `~/nvmodels/spark-ds41f/cache/profiles/d1107/` with the
 sizes and results recorded here.
+
+## Per-family kernel time in the same traces
+
+Kernel time summed by name (row sums, so overlapped launches on different
+streams are counted twice; the union above is the busy measure):
+
+| Kernel | c1 ms/step | c1 calls/step | c8 ms/step | c8 calls/step |
+| --- | ---: | ---: | ---: | ---: |
+| `moe_grouped_fp8_fp4_gemm_kernel` | 23.14 | 99.2 | 50.90 | 134.8 |
+| `l2_prefetch_kernel` | 12.22 | 148.7 | 18.49 | 197.9 |
+| `gemm_mxfp8_kernel` | 6.10 | 251.5 | 12.32 | 349.8 |
+| `oneshot_allreduce_kernel` | 4.15 | 101.5 | 15.43 | 134.5 |
+| `vocab_packed_projection_kernel` | 2.70 | 8.1 | 4.26 | 9.6 |
+| `moe_swiglu_cast_kernel_kernel` | 1.14 | 49.6 | — | — |
+
+Two readings that change the lever list:
+
+- **The vocabulary head is 2.7 ms of a 43 ms c1 step and 4.26 ms of a 102 ms c8
+  step** — a weight-read cost (the 248 MB shard), not a logits-write cost.
+  Device-to-device copies total **0.017 ms/step** over 7.5 copies, so the "12 MB
+  of logits written and read" is not what the head spends its time on; the
+  128-row tile (the other half of TODO item 4) is the part that matters, and only
+  where a head call exceeds 64 rows.
+- **`roce_all_reduce`'s staging copy is not a per-step memcpy fleet.** The trace
+  shows 7.5 device copies a step in total (0.017 ms), against 101–135
+  `oneshot_allreduce_kernel` launches a step: the copy happens *inside* the
+  collective kernel. TODO item 2 therefore removes an intra-kernel copy and a
+  producer→send dependency, not 116 launches, and its value can only be settled
+  by an A/B of the changed kernel.
