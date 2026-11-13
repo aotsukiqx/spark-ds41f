@@ -56,6 +56,18 @@ exceeds the 71 s wall):
   small in prefill.
 - `sparse_mla` 13.1% — attention at 484K, the third-largest cost.
 
+### The prefill is also GPU-saturated
+
+Kernel union over the trace window: **70,542 ms busy of 72,345 ms = 97.5%**, idle
+1.8 s. Of that idle, **1.62 s is a single stall** 0.6 s into the run, right after
+the first `scatter_rows_kernel` and before the first `fill_rows_kernel` — first-
+chunk host preparation, not a steady-state cost. Excluding it the idle is 0.25%.
+
+So a prefill lever pays only by removing GPU work (bytes or flops). Hiding
+communication behind compute has nothing to hide behind: the only exposed
+collective time is 68 ms of AllGather gaps across 120 occurrences, 0.1% of the
+window.
+
 ## 3. Boot timeline
 
 | Phase | Offset |
