@@ -1,0 +1,27 @@
+{
+  "note": "completion_tokens in these raw runs counted characters, not tokens; step counts come from the draft counter; see profile-results.md",
+  "rounds": [
+    {
+      "round": "c1",
+      "streams": 1,
+      "tokens": 192,
+      "wall_s": 1.093,
+      "draft_events": 26.0,
+      "steps": 26.0,
+      "step_ms_profiled": 42.022,
+      "step_ms_control": 42.064,
+      "tokens_per_s_charproxy": 254.45
+    },
+    {
+      "round": "c8",
+      "streams": 8,
+      "tokens": 192,
+      "wall_s": 2.377,
+      "draft_events": 189.0,
+      "steps": 23.6,
+      "step_ms_profiled": 100.607,
+      "step_ms_control": 86.871,
+      "tokens_per_s_charproxy": 935.7
+    }
+  ]
+}
