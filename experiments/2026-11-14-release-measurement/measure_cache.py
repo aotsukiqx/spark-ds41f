@@ -62,6 +62,8 @@ def main() -> None:
     parser.add_argument("--prefix-tokens", type=int, default=65_000)
     parser.add_argument("--distinct", type=int, default=200)
     parser.add_argument("--reuse", type=int, default=8)
+    parser.add_argument("--pressure-only", action="store_true",
+                        help="skip the reuse phases and pressure the pool with unrelated prefixes")
     args = parser.parse_args()
     base = args.base.rstrip("/")
     model = get(base, "/v1/models")["data"][0]["id"]
@@ -73,21 +75,27 @@ def main() -> None:
     print(json.dumps({"prefix_tokens": prefix_count}), flush=True)
 
     rows = []
-    for i in range(args.reuse):
+    for i in range(0 if args.pressure_only else args.reuse):
         row = ask(base, model, prefix + f"\n\nRound {i}: summarize the tide records.")
         row["phase"] = "reuse"
         rows.append(row)
         print(json.dumps(row), flush=True)
 
-    for i in range(args.reuse):
+    for i in range(0 if args.pressure_only else args.reuse):
         row = ask(base, model, prefix + f"\n\nCase {i}: name the failure mode number {i}.")
         row["phase"] = "shared-prefix"
         rows.append(row)
         print(json.dumps(row), flush=True)
 
+    if args.pressure_only:
+        ask(base, model, prefix + "\n\nRound 0 again: summarize the tide records.", 1)
+        print(json.dumps({"phase": "survived-before-pressure"}), flush=True)
     before = metrics(base)
     for i in range(args.distinct):
-        ask(base, model, (unit * max(1, args.prefix_tokens // unit_count)) + f"\n\nDistinct {i}.", 1)
+        # A unique leading identifier so the pressure prompts share no prefix:
+        # the pool must hold them, or the original prefix is what gets evicted.
+        ask(base, model, f"Pressure set {i} identifier {i * 7919}. "
+                         + unit * max(1, args.prefix_tokens // unit_count), 1)
     after = metrics(base)
     survivor = ask(base, model, prefix + "\n\nRound 0 again: summarize the tide records.")
     survivor["phase"] = "after-eviction-pressure"
