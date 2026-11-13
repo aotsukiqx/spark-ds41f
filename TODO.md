@@ -218,13 +218,15 @@ collectives, and DSpark drafting.
    - **Greedy argmax in the head epilogue:** write each tile's `(max, index)`
      pair instead of full FP32 logits when all active requests are greedy (~12 MB
      less written and read per TP4 call).
-     *Checked 2026-11-13:* the epilogue kernels already exist
-     (`packed_vocab_greedy_partials` and the Markov variants in `vocab.py`) and
-     run for the drafter's vocabulary-parallel greedy steps
-     (`spec_decode/dspark/speculator.py`). The target head still goes through
-     `packed_vocab_projection` (full logits) in
-     `model_executor/layers/logits_processor.py`; read its per-row gate before
-     calling this open or banked.
+     *Banked 2026-11-13:* `vocab.py` ships the full ladder — `ROW_TILES =
+     (16, 32, 64, 128)`, a 128-row `TILE_CONFIGS` entry with
+     `act_stages=2`, `BF16_HEAD_CONFIGS` for 128, and `row_tile(rows)` selecting
+     it, so a 65–128-row head call no longer splits. The greedy epilogue kernels
+     (`packed_vocab_greedy_partials`, Markov variants) run for the drafter's
+     vocabulary-parallel greedy steps. The trace also shows the head is
+     weight-read bound (2.7 ms of a 43 ms c1 step, 4.26 ms of 102 ms at c8)
+     while all device copies together are 0.017 ms a step, so the logits write
+     was never the cost.
 5. **A second stream inside the decode graph.** Overlap the shared expert with
    routed MoE, and attention key/indexer-key writes with the query path, on a
    second CUDA stream captured into the graph. First bound how much of the

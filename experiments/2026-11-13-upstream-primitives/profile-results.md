@@ -71,3 +71,14 @@ Two readings that change the lever list:
   collective kernel. TODO item 2 therefore removes an intra-kernel copy and a
   producer→send dependency, not 116 launches, and its value can only be settled
   by an A/B of the changed kernel.
+
+## Item 4 is banked, not open
+
+`vocab.py` carries the whole ladder: `ROW_TILES = (16, 32, 64, 128)`,
+`TILE_CONFIGS[128] = dict(block_N=32, threads=256, step_groups=1,
+num_stages=4, act_stages=2)`, a `BF16_HEAD_CONFIGS[128]` entry, and
+`row_tile(rows)` picking the smallest tile that holds the call — so a 65–128-row
+head no longer runs a second 64-row tile. The greedy epilogue kernels
+(`packed_vocab_greedy_partials`, `packed_vocab_markov_greedy_partials`) run for
+the drafter's vocabulary-parallel greedy steps. With the head weight-read bound
+and device copies at 0.017 ms a step, TODO item 4 has no open half left.
