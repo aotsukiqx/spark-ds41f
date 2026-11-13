@@ -1,0 +1,22 @@
+{
+  "recorded": "2026-11-13",
+  "window": "owner-directed maintenance window, manual hold per AGENTS.md (holder 'upstream-primitives window'); opened 13:13 UTC, closed 15:4x UTC with production restored",
+  "candidate": {
+    "image": "spark-ds41f:1107-upstream-primitives",
+    "arm": "experiments/2026-11-13-upstream-primitives/tp4-switched.json (extends the site profile; only image, expected_labels and upstreams_config change)",
+    "built": "on spark-eb1a from the locked sources (tilelang 15-patch chain tree 905b1008, tile_kernels tree fb6f14b9), GPU import smoke passed, distributed over the CX7 rails"
+  },
+  "boots": [
+    {"boot": 1, "ready": "cluster ready, guards active", "quality": "5/5", "verdicts": "all decode points same except prose-c16 flagged (-9.9% tok/s, +10.9% step ms)"},
+    {"boot": 2, "ready": "cluster ready, guards active", "quality": "5/5", "verdicts": "all decode points same (prose-c16 -5.5% within CI); one marginal flag: code-c1 step +3.0%"}
+  ],
+  "cross_boot_reading": "the two flags land on different points and neither repeats: at this site's CI widths (10-20% on the concurrency points) that is the signature of boot-to-boot noise, not of a regression. No point shows a proven change in either direction.",
+  "reference": "manifests/benchmarks/2026-11-07-spark-ds41f-1107-switched.json",
+  "method_notes": [
+    "bench run with --allow-mismatch: the blocking doctor item (nvidia-drm fbdev=N) is a pre-existing site deviation, identical for reference and candidate (site record, Deviations table)",
+    "--cool-below 0: the site has no fan-floor control; 600 s of floor-12 cooling could not reach 55 C (55.1-57.7 C), matching the site record's 'no cooling preconditioning' practice",
+    "two boots, quality gate and decode grid on each; prefill/admission suites not run (the change touches one epilogue instruction, prefill is not its surface)"
+  ],
+  "decision": "retain, do not promote on performance. The kernel-level screen showed the honest ceiling (~0.15% of a decode step) and the serving runs confirm 'same' within noise on both boots with quality 5/5. The value of this candidate is compiler hygiene: the NaN clamp becomes one upstream intrinsic instead of a local three-Select patch, and the prefetch intrinsics become available for the in-kernel emission experiment. Carrying it into the next release's TileLang refresh costs nothing measurable; promoting it alone buys nothing measurable. Owner's call.",
+  "restored": "production spark-ds41f:1107 via config/cluster-eb1a.local.json (cluster ready, guards active), hold file removed"
+}

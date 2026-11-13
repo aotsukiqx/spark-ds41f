@@ -100,10 +100,23 @@ Three variants of the same kernel, same inputs, same harness
   trees cleaned. Production serving untouched throughout (single container,
   Up throughout).
 
-## Where this stops
+## Serving qualification (2026-11-13 maintenance window)
 
-Everything above is kernel-level. Promotion requires: a candidate image
-carrying the 15-patch TileLang series and the new TileKernels patch, a lab
-window with two boots, the release/single-stream/sampled suites against
-`spark-ds41f-1107`'s recorded reference, and the quality gate — the owner's
-call, not this folder's.
+Owner-directed window on the production site: manual hold, production stopped,
+candidate image built from the locked sources (`spark-ds41f:1107-upstream-primitives`,
+tilelang chain tree `905b1008` cross-checked against the Mac-verified tree),
+distributed over the CX7 rails, two boots, production restored, hold removed.
+Details and receipts: `results-serving.json`, `receipts/serving/`.
+
+| Boot | Quality | Decode grid |
+| --- | --- | --- |
+| 1 | 5/5 | all points `same`; one flag at `prose-c16` (−9.9% tok/s) |
+| 2 | 5/5 | all points `same`; one marginal flag at `code-c1` step (+3.0%) |
+
+The two flags land on different points and neither repeats — boot-to-boot
+noise at this site's CI widths, not a regression. **Verdict: retain, do not
+promote on performance.** The change buys patch hygiene (the NaN clamp becomes
+one upstream intrinsic; the prefetch intrinsics become available for the
+in-kernel emission experiment), not measurable serving speed — exactly what
+the kernel-level ceiling predicted (~0.15% of a step). Folding it into the
+next TileLang refresh costs nothing measurable.
