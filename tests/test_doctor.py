@@ -1074,10 +1074,10 @@ class GLPTest(unittest.TestCase):
         self.assertEqual(spark.glp_problems(cluster), [])
 
     def test_a_profile_without_steering_passes(self) -> None:
-        self.assertEqual(spark.glp_problems(spark.read_cluster(FIXTURE)), [])
+        self.assertEqual(spark.glp_problems(spark.read_cluster(FIXTURE, "tp4-ring")), [])
 
     def test_steering_by_hand_is_reported(self) -> None:
-        cluster = spark.read_cluster(FIXTURE)
+        cluster = spark.read_cluster(FIXTURE, "tp4-ring")
         cluster["environment"]["WEIGHTLESS_STEER_PATH"] = "/glp/vector.gguf"
         self.assertIn("without a glp block", spark.glp_problems(cluster)[0])
 

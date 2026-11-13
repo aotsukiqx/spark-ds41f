@@ -1,7 +1,18 @@
 # Current state
 
-Production is **spark-ds41f-1030** ([config/cluster.json](../config/cluster.json), frozen in
-[releases/spark-ds41f-1030](../releases/spark-ds41f-1030/)), serving DeepSeek-V4.1-Flash-1017 at
+Production is **spark-ds41f-1107** ([config/cluster.json](../config/cluster.json), frozen in
+[releases/spark-ds41f-1107](../releases/spark-ds41f-1107/)), serving DeepSeek-V4.1-Flash-1017 at
+1,048,576 tokens on the `tp4-ring` shape (dgx1-dgx4). It was promoted 2026-11-07 as
+[`2026-11-07-spark-ds41f-1107`](../manifests/baselines/2026-11-07-spark-ds41f-1107.json)
+([release record](../experiments/2026-10-26-spark-ds41f-candidate/1107/README.md)): image
+`spark-ds41f:1107` (`sha256:3f32a962ce04`), one digest on all ranks, built by `bin/spark build`
+from Local Inference Lab's vLLM `19f2c20e` with 641 patches (patch head `2756478b`, tree
+`ed1bdb7a`), TileLang `2123e412ce22` with 13 SM120/SM121 patches (0001-0013), TileKernels 2.0.0
+with one patch, sparknet 0.5.0 and NCCL 2.30.7 with four patches. `--load-format direct` with an
+empty `VLLM_PLUGINS` loads the checkpoint; every serving kernel is TileLang. The settings in
+force, the qualification arms and the per-shape references are in the tables below.
+
+Before spark-ds41f-1107 production was **spark-ds41f-1030**, serving DeepSeek-V4.1-Flash-1017 at
 1,048,576 tokens on the `tp4-ring` shape (dgx1-dgx4). It was promoted 2026-10-30 as
 [`2026-10-30-spark-ds41f-1030`](../manifests/baselines/2026-10-30-spark-ds41f-1030.json)
 ([release record](../experiments/2026-10-26-spark-ds41f-candidate/README.md),
