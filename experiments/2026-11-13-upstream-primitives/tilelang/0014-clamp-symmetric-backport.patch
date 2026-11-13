@@ -1,0 +1,299 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: KellyFrog <48882887+KellyFrog@users.noreply.github.com>
+Date: Tue, 10 Nov 2026 16:47:15 +0800
+Subject: [PATCH 1/2] [CUDA] Add NaN-propagating symmetric clamp (#3605)
+
+* [CUDA] Add explicit FP32 symmetric clamp intrinsic
+
+* [CUDA] Add FP16 and BF16 symmetric clamp with packed x2 lowering
+
+* [CUDA] Preserve NaNs in symmetric clamp intrinsics
+
+---------
+
+Co-authored-by: LJC00118 <317678865@qq.com>
+(cherry picked from commit 824c5c424cb0bd92349a36c83cf824b3b3b7db3e)
+---
+ src/cuda/codegen/codegen_cuda.cc              | 29 ++++++++++++
+ src/cuda/op/builtin.cc                        |  6 +++
+ src/cuda/op/builtin.h                         |  3 ++
+ src/tl_templates/cuda/math.h                  | 45 +++++++++++++++++++
+ .../language/test_tilelang_language_clamp.py  | 41 +++++++++++++++++
+ .../target/test_tilelang_codegen_clamp.py     | 45 +++++++++++++++++++
+ tilelang/cuda/language/math.py                | 35 ++++++++++++++-
+ 7 files changed, 203 insertions(+), 1 deletion(-)
+ create mode 100644 testing/python/target/test_tilelang_codegen_clamp.py
+
+diff --git a/src/cuda/codegen/codegen_cuda.cc b/src/cuda/codegen/codegen_cuda.cc
+index 6224f208..7e4e3c00 100644
+--- a/src/cuda/codegen/codegen_cuda.cc
++++ b/src/cuda/codegen/codegen_cuda.cc
+@@ -5052,6 +5052,35 @@ bool CodeGenTileLangCUDA::HandleLateIntrinsicCall(const CallNode *op,
+       TryEmitPackedMathCall_(call, os)) {
+     return true;
+   }
++  if (op->op.same_as(tl::clamp_symmetric())) {
++    ICHECK_EQ(op->args.size(), 2);
++    DataType dtype = op->dtype;
++    ICHECK(dtype.element_of() == DataType::Float(32) || dtype.is_float16() ||
++           dtype.is_bfloat16())
++        << "tl.clamp_symmetric requires float16, bfloat16, or float32 operands";
++    Target target = Target::Current(/*allow_not_defined=*/true);
++    ICHECK(target.defined() && tl::TargetHasSMVersionGE(target, 86))
++        << "tl.clamp_symmetric requires CUDA SM86 or newer";
++    need_math_h_ = true;
++    std::vector<PrimExpr> args(op->args.begin(), op->args.end());
++    for (PrimExpr &arg : args) {
++      ICHECK_EQ(arg.dtype(), dtype);
++      if (!dtype.is_scalar() && SideEffect(arg) > CallEffectKind::kPure) {
++        Var value("clamp_symmetric_arg", dtype);
++        arg = Let(value, arg, value);
++      }
++    }
++    if (dtype.is_scalar()) {
++      os << "tl::clamp_symmetric(" << PrintExpr(args[0]) << ", "
++         << PrintExpr(args[1]) << ")";
++    } else if ((dtype.is_float16() || dtype.is_bfloat16()) &&
++               CanEmitPackedX2Math(dtype)) {
++      EmitPackedX2Call("clamp_symmetric2", dtype, args, os);
++    } else {
++      EmitPerLaneScalarCall("tl::clamp_symmetric", dtype, args, os);
++    }
++    return true;
++  }
+   if (op->op.same_as(tl::fma()) || op->op.same_as(tl::fmul())) {
+     // Round-to-nearest multiply / fused multiply-add with a guaranteed
+     // instruction boundary (never re-contracted or split by NVCC). Scalar
+diff --git a/src/cuda/op/builtin.cc b/src/cuda/op/builtin.cc
+index 11a0445c..6c3dadd3 100644
+--- a/src/cuda/op/builtin.cc
++++ b/src/cuda/op/builtin.cc
+@@ -14,6 +14,12 @@ namespace tl {
+ 
+ using namespace tirx;
+ 
++TIR_DEFINE_TL_BUILTIN(clamp_symmetric)
++    .set_num_inputs(2)
++    .set_attr<TCallEffectKind>("TCallEffectKind",
++                               Integer(CallEffectKind::kPure))
++    .set_attr<TVectorizable>("TVectorizable", true);
++
+ TVM_REGISTER_PASS_CONFIG_OPTION(kDisableWarpSpecialized, Bool);
+ TVM_REGISTER_PASS_CONFIG_OPTION(kEnableAutoWarpSpecialization, ffi::String);
+ TVM_REGISTER_PASS_CONFIG_OPTION(kDisableTMALower, Bool);
+diff --git a/src/cuda/op/builtin.h b/src/cuda/op/builtin.h
+index f0d8d916..2db9f001 100644
+--- a/src/cuda/op/builtin.h
++++ b/src/cuda/op/builtin.h
+@@ -11,6 +11,9 @@
+ namespace tvm {
+ namespace tl {
+ 
++/*! \brief FP16/BF16/FP32 min.NaN.xorsign.abs with NaN propagation (SM86+). */
++TVM_DLL const Op &clamp_symmetric();
++
+ namespace attr {
+ 
+ // Warp-specialization annotations consumed only by CUDA lowering.
+diff --git a/src/tl_templates/cuda/math.h b/src/tl_templates/cuda/math.h
+index 82fe09bb..bc1878d3 100644
+--- a/src/tl_templates/cuda/math.h
++++ b/src/tl_templates/cuda/math.h
+@@ -45,3 +45,48 @@ bfloat16_t fast_cos(bfloat16_t x) { return bfloat16_t(fast_cos(float(x))); }
+ TL_DEVICE
+ bfloat16_t fast_tanh(bfloat16_t x) { return bfloat16_t(fast_tanh(float(x))); }
+ } // namespace cutlass
++
++namespace tl {
++
++TL_DEVICE float clamp_symmetric(float x, float limit) {
++  float result;
++  asm("min.NaN.xorsign.abs.f32 %0, %1, %2;"
++      : "=f"(result)
++      : "f"(x), "f"(limit));
++  return result;
++}
++
++TL_DEVICE half_t clamp_symmetric(half_t x, half_t limit) {
++  uint16_t result;
++  asm("min.NaN.xorsign.abs.f16 %0, %1, %2;"
++      : "=h"(result)
++      : "h"(x.raw()), "h"(limit.raw()));
++  return half_t::bitcast(result);
++}
++
++TL_DEVICE bfloat16_t clamp_symmetric(bfloat16_t x, bfloat16_t limit) {
++  uint16_t result;
++  asm("min.NaN.xorsign.abs.bf16 %0, %1, %2;"
++      : "=h"(result)
++      : "h"(x.raw()), "h"(limit.raw()));
++  return bfloat16_t::bitcast(result);
++}
++
++TL_DEVICE __half2 clamp_symmetric2(__half2 x, __half2 limit) {
++  uint1 result;
++  asm("min.NaN.xorsign.abs.f16x2 %0, %1, %2;"
++      : "=r"(result.x)
++      : "r"(to_uint1(x).x), "r"(to_uint1(limit).x));
++  return from_uint1<__half2>(result);
++}
++
++TL_DEVICE __nv_bfloat162 clamp_symmetric2(__nv_bfloat162 x,
++                                          __nv_bfloat162 limit) {
++  uint1 result;
++  asm("min.NaN.xorsign.abs.bf16x2 %0, %1, %2;"
++      : "=r"(result.x)
++      : "r"(to_uint1(x).x), "r"(to_uint1(limit).x));
++  return from_uint1<__nv_bfloat162>(result);
++}
++
++} // namespace tl
+diff --git a/testing/python/language/test_tilelang_language_clamp.py b/testing/python/language/test_tilelang_language_clamp.py
+index 0abe9d12..7ac0c070 100644
+--- a/testing/python/language/test_tilelang_language_clamp.py
++++ b/testing/python/language/test_tilelang_language_clamp.py
+@@ -115,6 +115,47 @@ def test_clamp():
+     run_clamp_value_range(1024, 128, T.float32)
+ 
+ 
++@tilelang.testing.requires_cuda
++@pytest.mark.parametrize("threads", [32, 64, 128])
++@pytest.mark.parametrize("dtype", ["float16", "bfloat16", "float32"])
++def test_clamp_symmetric(threads, dtype):
++    import torch
++
++    if torch.cuda.get_device_capability() < (8, 6):
++        pytest.skip("clamp_symmetric requires SM86+")
++
++    @T.prim_func
++    def main(A: T.Tensor((128,), dtype), B: T.Tensor((128,), dtype), C: T.Tensor((128,), dtype)):
++        with T.Kernel(1, threads=threads):
++            for i in T.Parallel(128):
++                C[i] = T.clamp_symmetric(A[i], B[i])
++
++    kernel = tilelang.compile(main)
++    torch_dtype = getattr(torch, dtype)
++    subnormal = torch.finfo(torch_dtype).tiny / 2
++    values = [0.0, -0.0, 0.5, -0.5, 4.0, -4.0, float("inf"), -float("inf"), float("nan"), -float("nan"), subnormal, -subnormal]
++    a = torch.tensor(values, device="cuda", dtype=torch_dtype).repeat(11)[:128].contiguous()
++    int_dtype = torch.int32 if dtype == "float32" else torch.int16
++    sign_mask = torch.iinfo(int_dtype).min
++    # Construct negative NaNs by bits: narrowing may canonicalize their sign.
++    a.view(int_dtype)[9::12].bitwise_or_(sign_mask)
++    c = torch.empty_like(a)
++    for limit in [2.0, subnormal, float("inf")]:
++        b = torch.full_like(a, limit)
++        # Input-only, limit-only, and both-NaN lanes, mixed with numeric lanes
++        # in the same packed x2 call. Include both NaN signs in each operand.
++        b[2::12] = float("nan")
++        b[5::12] = float("nan")
++        b.view(int_dtype)[5::12].bitwise_or_(sign_mask)
++        b[8::24] = float("nan")
++        b[9::24] = float("nan")
++        kernel(a, b, c)
++        ref = torch.clamp(a.float(), -b.float(), b.float())
++        torch.testing.assert_close(c.float(), ref, equal_nan=True, atol=0, rtol=0)
++        numeric = ~torch.isnan(ref)
++        assert torch.equal(torch.signbit(c[numeric]), torch.signbit(ref[numeric]))
++
++
+ FP8_OPS = {
+     "max": lambda a, b, dtype: T.max(a, b),
+     "min": lambda a, b, dtype: T.min(a, b),
+diff --git a/testing/python/target/test_tilelang_codegen_clamp.py b/testing/python/target/test_tilelang_codegen_clamp.py
+new file mode 100644
+index 00000000..adba4d79
+--- /dev/null
++++ b/testing/python/target/test_tilelang_codegen_clamp.py
+@@ -0,0 +1,45 @@
++import pytest
++
++import tilelang
++import tilelang.language as T
++import tilelang.testing
++from tilelang import tvm
++from tilelang.engine import lower
++
++
++@tilelang.testing.requires_cuda
++@pytest.mark.parametrize("arch", ["sm_80", "sm_86", "sm_100"])
++@pytest.mark.parametrize("threads", [32, 64, 128])
++@pytest.mark.parametrize("dtype", ["float16", "bfloat16", "float32"])
++def test_clamp_symmetric_codegen(arch, threads, dtype):
++    @T.prim_func
++    def main(A: T.Tensor((128,), dtype), C: T.Tensor((128,), dtype)):
++        with T.Kernel(1, threads=threads):
++            for i in T.Parallel(128):
++                C[i] = T.clamp_symmetric(A[i], 1.0)
++
++    target = tvm.target.Target({"kind": "cuda", "arch": arch})
++    with target:
++        if arch == "sm_80":
++            with pytest.raises(Exception, match="requires CUDA SM86 or newer"):
++                lower(main, target=target)
++        else:
++            source = lower(main, target=target).kernel_source
++            helper = "tl::clamp_symmetric2(" if dtype != "float32" and threads < 128 else "tl::clamp_symmetric("
++            assert helper in source
++            assert "tl::clamp(" not in source
++
++
++@tilelang.testing.requires_cuda
++@pytest.mark.parametrize("dtype", ["float16", "bfloat16", "float32"])
++def test_clamp_symmetric_types(dtype):
++    x = T.Var("x", dtype + "x4")
++    result = T.clamp_symmetric(x, 1.0)
++    assert result.dtype == dtype + "x4"
++    assert all(arg.dtype == dtype + "x4" for arg in result.args)
++    with pytest.raises(TypeError, match="float32"):
++        T.clamp_symmetric(T.Var("double_x", "float64"), 1.0)
++    with pytest.raises(TypeError, match="matching operand dtypes"):
++        T.clamp_symmetric(x, T.Var("limit", "float64"))
++    with pytest.raises(ValueError, match="matching lanes"):
++        T.clamp_symmetric(x, T.Var("limit", dtype + "x2"))
+diff --git a/tilelang/cuda/language/math.py b/tilelang/cuda/language/math.py
+index dd4d019b..eb1c3ca3 100644
+--- a/tilelang/cuda/language/math.py
++++ b/tilelang/cuda/language/math.py
+@@ -37,4 +37,37 @@ def fma(x: PrimExpr, y: PrimExpr, z: PrimExpr) -> PrimExpr:
+     return tirx.call_intrin(x.dtype, tirx.op.Op.get("tl.fma"), x, y, z)
+ 
+ 
+-__all__ = ["fma", "fmul"]
++def clamp_symmetric(x: PrimExpr, limit: PrimExpr) -> PrimExpr:
++    """Symmetric clipping using CUDA ``min.NaN.xorsign.abs`` (SM86+).
++
++    For non-NaN operands, requires ``limit > 0`` and returns
++    ``copysign(min(abs(x), limit), x)``, preserving the sign of zero.
++    Supports float16, bfloat16, and float32 with matching operand dtypes.
++    Python numeric limits are converted to the input's element dtype;
++    a scalar limit is broadcast to vector inputs.
++    The caller supplies a positive limit for clipping semantics. No runtime
++    check is emitted: scalar inputs lower to one PTX instruction. Even-width
++    float16/bfloat16 vectors use packed x2 instructions, one per pair.
++    Float32 vectors use one instruction per lane.
++
++    If either operand is NaN, the result is a canonical NaN; its original
++    sign and payload are not preserved. Nonpositive numeric limits are
++    outside this API's contract.
++    Subnormals are preserved. Each operand is evaluated once.
++    """
++    x = tirx.convert(x)
++    limit = tirx.const(limit, DataType(x.dtype).with_lanes(1)) if isinstance(limit, (int, float)) else tirx.convert(limit)
++    x_dtype, limit_dtype = DataType(x.dtype), DataType(limit.dtype)
++    element_dtype = x_dtype.with_lanes(1)
++    if element_dtype not in (DataType("float16"), DataType("bfloat16"), DataType("float32")):
++        raise TypeError("T.clamp_symmetric requires float16, bfloat16, or float32 operands")
++    if limit_dtype.with_lanes(1) != element_dtype:
++        raise TypeError("T.clamp_symmetric requires matching operand dtypes")
++    if limit_dtype.lanes == 1 and x_dtype.lanes != 1:
++        limit = tirx.Broadcast(limit, x_dtype.lanes)
++    elif limit_dtype.lanes != x_dtype.lanes:
++        raise ValueError("T.clamp_symmetric requires matching lanes or a scalar limit")
++    return tirx.call_intrin(x.dtype, tirx.op.Op.get("tl.clamp_symmetric"), x, limit)
++
++
++__all__ = ["fma", "fmul", "clamp_symmetric"]
+-- 
+2.51.2
+

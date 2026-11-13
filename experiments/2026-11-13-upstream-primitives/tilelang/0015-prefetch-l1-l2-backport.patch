@@ -1,0 +1,287 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jia Shengyuan <jia_shengyuan@stu.pku.edu.cn>
+Date: Tue, 10 Nov 2026 16:43:06 +0800
+Subject: [PATCH 2/2] [CUDA] Add L2 prefetching instructions with optional
+ eviction policy (#3490)
+
+* [CUDA] Add L2 prefetching instructions with optional eviction policy
+
+* fix format
+
+* [CUDA] Complete prefetch and prefetchu support with EvictPriority
+
+* [CUDA] Align prefetch eviction policy with string APIs
+
+---------
+
+Co-authored-by: LeiWang1999 <leiwang1999@outlook.com>
+(cherry picked from commit 35850c06875bcc84751417982bf7b4d662bafdbc)
+---
+ src/cuda/codegen/codegen_cuda.cc   | 17 ++++++++
+ src/cuda/op/builtin.cc             | 15 +++++++
+ src/cuda/op/builtin.h              | 24 +++++++++++
+ src/tl_templates/cuda/copy.h       | 49 +++++++++++++++++++++++
+ tilelang/cuda/language/__init__.py | 17 +++++++-
+ tilelang/cuda/language/prefetch.py | 64 ++++++++++++++++++++++++++++++
+ 6 files changed, 185 insertions(+), 1 deletion(-)
+ create mode 100644 tilelang/cuda/language/prefetch.py
+
+diff --git a/src/cuda/codegen/codegen_cuda.cc b/src/cuda/codegen/codegen_cuda.cc
+index 7e4e3c00..39c9f3f2 100644
+--- a/src/cuda/codegen/codegen_cuda.cc
++++ b/src/cuda/codegen/codegen_cuda.cc
+@@ -2903,6 +2903,23 @@ void CodeGenTileLangCUDA::VisitExpr_(const CallNode *op, std::ostream &os) {
+     print_extern_call_stmt(ss.str());
+   } else if (op->op.same_as(tl::no_set_max_nreg())) {
+     return;
++  } else if (op->op.same_as(tl::prefetch_l1())) {
++    need_copy_h_ = true;
++    std::ostringstream ss;
++    bool is_global = Downcast<IntImm>(op->args[1])->value != 0;
++    ss << "tl::prefetch_l1<" << (is_global ? "true" : "false") << ">";
++    print_extern_call_stmt(ss.str(), 0, 1);
++  } else if (op->op.same_as(tl::prefetchu_l1())) {
++    need_copy_h_ = true;
++    print_extern_call_stmt("tl::prefetchu_l1");
++  } else if (op->op.same_as(tl::prefetch_l2())) {
++    need_copy_h_ = true;
++    std::ostringstream ss;
++    auto priority = Downcast<IntImm>(op->args[1])->value;
++    bool is_global = Downcast<IntImm>(op->args[2])->value != 0;
++    ss << "tl::prefetch_l2<" << priority << ", "
++       << (is_global ? "true" : "false") << ">";
++    print_extern_call_stmt(ss.str(), 0, 2);
+   } else if (op->op.same_as(tl::prefetch_tma_descriptor())) {
+     need_copy_sm90_h_ = true;
+     print_extern_call_stmt("tl::prefetch_tma_descriptor");
+diff --git a/src/cuda/op/builtin.cc b/src/cuda/op/builtin.cc
+index 6c3dadd3..081d652f 100644
+--- a/src/cuda/op/builtin.cc
++++ b/src/cuda/op/builtin.cc
+@@ -127,6 +127,21 @@ TIR_DEFINE_TL_BUILTIN(prefetch_tma_descriptor)
+     .set_attr<TCallEffectKind>("TCallEffectKind",
+                                Integer(CallEffectKind::kOpaque));
+ 
++TIR_DEFINE_TL_BUILTIN(prefetch_l1)
++    .set_num_inputs(2)
++    .set_attr<TCallEffectKind>("TCallEffectKind",
++                               Integer(CallEffectKind::kOpaque));
++
++TIR_DEFINE_TL_BUILTIN(prefetchu_l1)
++    .set_num_inputs(1)
++    .set_attr<TCallEffectKind>("TCallEffectKind",
++                               Integer(CallEffectKind::kOpaque));
++
++TIR_DEFINE_TL_BUILTIN(prefetch_l2)
++    .set_num_inputs(3)
++    .set_attr<TCallEffectKind>("TCallEffectKind",
++                               Integer(CallEffectKind::kOpaque));
++
+ TIR_DEFINE_TL_BUILTIN(tma_load).set_num_inputs(-1).set_attr<TCallEffectKind>(
+     "TCallEffectKind", Integer(CallEffectKind::kOpaque));
+ 
+diff --git a/src/cuda/op/builtin.h b/src/cuda/op/builtin.h
+index 2db9f001..a3e5bcff 100644
+--- a/src/cuda/op/builtin.h
++++ b/src/cuda/op/builtin.h
+@@ -142,6 +142,30 @@ TVM_DLL const Op &create_tma_im2col_descriptor();
+  */
+ TVM_DLL const Op &prefetch_tma_descriptor();
+ 
++/*!
++ * \brief Prefetch a global/local memory cache line into L1.
++ *
++ * prefetch_l1(addr, is_global)
++ *
++ */
++TVM_DLL const Op &prefetch_l1();
++
++/*!
++ * \brief Prefetch a memory cache line into uniform L1.
++ *
++ * prefetchu_l1(addr)
++ *
++ */
++TVM_DLL const Op &prefetchu_l1();
++
++/*!
++ * \brief Prefetch a global/local memory cache line into L2.
++ *
++ * prefetch_l2(addr, eviction_priority, is_global)
++ *
++ */
++TVM_DLL const Op &prefetch_l2();
++
+ /*!
+  * \brief tvm intrinsics for loading data from global tensor descriptor to
+  * shared memory
+diff --git a/src/tl_templates/cuda/copy.h b/src/tl_templates/cuda/copy.h
+index 65934643..62798a23 100644
+--- a/src/tl_templates/cuda/copy.h
++++ b/src/tl_templates/cuda/copy.h
+@@ -281,4 +281,53 @@ TL_DEVICE void store_global_128_conditional(void *ptr, uint4 value, bool pred) {
+   global_store<uint4, 16>(ptr, value, pred);
+ }
+ 
++template <bool IsGlobal> TL_DEVICE void prefetch_l1(const void *ptr) {
++  uint64_t addr;
++  if constexpr (IsGlobal) {
++    addr = __cvta_generic_to_global(ptr);
++    asm volatile("prefetch.global.L1 [%0];" : : "l"(addr) : "memory");
++  } else {
++    addr = __cvta_generic_to_local(ptr);
++    asm volatile("prefetch.local.L1 [%0];" : : "l"(addr) : "memory");
++  }
++}
++
++TL_DEVICE void prefetchu_l1(const void *ptr) {
++  asm volatile("prefetchu.L1 [%0];" : : "l"(ptr) : "memory");
++}
++
++template <int EvictPriority, bool IsGlobal>
++TL_DEVICE void prefetch_l2(const void *ptr) {
++  uint64_t addr;
++  if constexpr (IsGlobal) {
++    addr = __cvta_generic_to_global(ptr);
++  } else {
++    addr = __cvta_generic_to_local(ptr);
++  }
++  if constexpr (EvictPriority == -1) {
++    if constexpr (IsGlobal) {
++      asm volatile("prefetch.global.L2 [%0];" : : "l"(addr) : "memory");
++    } else {
++      asm volatile("prefetch.local.L2 [%0];" : : "l"(addr) : "memory");
++    }
++  } else {
++#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 800)
++    if constexpr (EvictPriority == 0) {
++      asm volatile("prefetch.global.L2::evict_normal [%0];"
++                   :
++                   : "l"(addr)
++                   : "memory");
++    } else {
++      asm volatile("prefetch.global.L2::evict_last [%0];"
++                   :
++                   : "l"(addr)
++                   : "memory");
++    }
++#else
++    static_assert(EvictPriority != EvictPriority,
++                  "tl::prefetch_l2 requires sm_80 or later");
++#endif
++  }
++}
++
+ } // namespace tl
+diff --git a/tilelang/cuda/language/__init__.py b/tilelang/cuda/language/__init__.py
+index a46a35d3..c1dc5745 100644
+--- a/tilelang/cuda/language/__init__.py
++++ b/tilelang/cuda/language/__init__.py
+@@ -96,6 +96,8 @@ from .math import *  # noqa: F401,F403
+ from .math import __all__ as _MATH_ALL
+ from .pdl import *  # noqa: F401,F403
+ from .pdl import __all__ as _PDL_ALL
++from .prefetch import *  # noqa: F401,F403
++from .prefetch import __all__ as _PREFETCH_ALL
+ from .print import *  # noqa: F401,F403
+ from .print import __all__ as _PRINT_ALL
+ from .random import *  # noqa: F401,F403
+@@ -205,6 +207,7 @@ __all__ = tuple(
+             *_INTRINSICS_ALL,
+             *_MATH_ALL,
+             *_PDL_ALL,
++            *_PREFETCH_ALL,
+             *_PRINT_ALL,
+             *_RANDOM_ALL,
+             *_TIR_ALL,
+@@ -213,4 +216,16 @@ __all__ = tuple(
+     )
+ )
+ 
+-del _CLUSTER_ALL, _COMMON_ALL, _CUDA_API_ALL, _INTRINSICS_ALL, _MATH_ALL, _PDL_ALL, _PRINT_ALL, _RANDOM_ALL, _TIR_ALL, _WARPGROUP_ALL
++del (
++    _CLUSTER_ALL,
++    _COMMON_ALL,
++    _CUDA_API_ALL,
++    _INTRINSICS_ALL,
++    _MATH_ALL,
++    _PDL_ALL,
++    _PREFETCH_ALL,
++    _PRINT_ALL,
++    _RANDOM_ALL,
++    _TIR_ALL,
++    _WARPGROUP_ALL,
++)
+diff --git a/tilelang/cuda/language/prefetch.py b/tilelang/cuda/language/prefetch.py
+new file mode 100644
+index 00000000..6cac8b21
+--- /dev/null
++++ b/tilelang/cuda/language/prefetch.py
+@@ -0,0 +1,64 @@
++from typing import Literal
++
++from tvm import tirx
++
++from tilelang.language.copy_op import EVICTION_POLICY_IDS
++from tilelang.utils.language import is_global, is_local
++
++__all__ = ["prefetch_l1", "prefetchu_l1", "prefetch_l2"]
++
++
++def prefetch_l1(addr: tirx.BufferLoad) -> tirx.Call:
++    """Prefetch the global or local memory cache line containing ``addr`` into L1."""
++    if not is_local(addr) and not is_global(addr):
++        raise ValueError(f"prefetch_l1 requires global or local memory, got scope={addr.buffer.scope()}")
++    return tirx.call_intrin(
++        "void",
++        tirx.op.Op.get("tl.prefetch_l1"),
++        tirx.address_of(addr),
++        is_global(addr),
++    )
++
++
++def prefetchu_l1(addr: tirx.BufferLoad) -> tirx.Call:
++    """Prefetch the memory cache line containing ``addr`` into uniform L1."""
++    if not is_global(addr):
++        raise ValueError(f"prefetchu_l1 requires global memory, got scope={addr.buffer.scope()}")
++    return tirx.call_intrin(
++        "void",
++        tirx.op.Op.get("tl.prefetchu_l1"),
++        tirx.address_of(addr),
++    )
++
++
++def prefetch_l2(
++    addr: tirx.BufferLoad,
++    eviction_policy: Literal["evict_normal", "evict_last"] | None = None,
++) -> tirx.Call:
++    """Prefetch the global or local memory cache line containing ``addr`` into L2.
++
++    Args:
++        addr: A global or local buffer element, such as ``x[i]``. Only its address is used.
++        eviction_policy: Compile-time cache eviction priority. None leaves the priority unspecified.
++            "evict_normal" and "evict_last" require global memory and sm_80 or later.
++
++    Returns:
++        A call to the L2 prefetch intrinsic. Prefetch is a performance hint and
++        does not guarantee cache residency or synchronize memory accesses.
++    """
++    if eviction_policy not in (None, "evict_normal", "evict_last"):
++        raise ValueError(f"prefetch_l2 eviction_policy expects None, 'evict_normal', or 'evict_last'. Got {eviction_policy!r}")
++
++    if is_local(addr):
++        if eviction_policy is not None:
++            raise ValueError("prefetch_l2 eviction_policy requires global memory")
++    elif not is_global(addr):
++        raise ValueError(f"prefetch_l2 requires global or local memory, got scope={addr.buffer.scope()}")
++
++    return tirx.call_intrin(
++        "void",
++        tirx.op.Op.get("tl.prefetch_l2"),
++        tirx.address_of(addr),
++        -1 if eviction_policy is None else EVICTION_POLICY_IDS[eviction_policy],
++        is_global(addr),
++    )
+-- 
+2.51.2
+

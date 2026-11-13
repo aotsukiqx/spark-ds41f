@@ -1,0 +1,13 @@
+{
+  "repo_commit": "d9302199 (site/spark-eb1a)",
+  "baseline": "2026-11-07-spark-ds41f-1107",
+  "image": "spark-ds41f:1107",
+  "upstreams": {
+    "vllm": "19f2c20ed4d64ae22bd009ceacadd85e2a81e354",
+    "tilelang": "2123e412ce2217b324c50c4ec967213906456ac5 + experiments/2026-10-26-spark-ds41f-candidate/1107/tilelang/series (0001-0013)",
+    "tile_kernels": "66258df6175d2f630ffecb04c5ab66bff8a2ae6a + patches/tile_kernels/series",
+    "sparknet": "1fd6a1fbd8dc4884057046d1ebd93d585c9e4bcf"
+  },
+  "screening_host": "spark-eb1a (production image in side containers; serving untouched)",
+  "recorded": "2026-11-13"
+}

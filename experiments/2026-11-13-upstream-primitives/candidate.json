@@ -1,0 +1,18 @@
+{
+  "tilelang": {
+    "base": "2123e412ce2217b324c50c4ec967213906456ac5 + 1107 series (0001-0013)",
+    "series": "experiments/2026-11-13-upstream-primitives/tilelang/series",
+    "added": [
+      "0014-clamp-symmetric-backport.patch  (tile-ai/tilelang 824c5c42, cherry-picked -x; author preserved)",
+      "0015-prefetch-l1-l2-backport.patch   (tile-ai/tilelang 35850c06, cherry-picked -x; author preserved)"
+    ],
+    "verification": "the 15-patch chain applies from the pin with git apply and reaches tree 905b10089b08c88175867a0fbebb058a46461b6f, identical to the cherry-picked branch"
+  },
+  "tile_kernels": {
+    "base": "66258df6175d2f630ffecb04c5ab66bff8a2ae6a (v2.0.0)",
+    "series": "experiments/2026-11-13-upstream-primitives/tile_kernels/series",
+    "change": "0001 now prefers tl.clamp_symmetric (one min.NaN.xorsign.abs instruction) and keeps the compare-and-select form as the fallback for a compiler without the intrinsic; applies clean on both v2.0.0 and v2.1.0 (c1cf914a)"
+  },
+  "config": "none: config/cluster.json, the recipe and every serving option are unchanged. Screening installs the two wheels into side containers only.",
+  "explicitly_not_included": "tile-ai/tilelang c99577fd (TF32 round-to-nearest-even): the mHC FP32 -> 3x exact-TF32 split assumes current rounding; it stays out until a pin migration re-runs the determinism and quality gates."
+}

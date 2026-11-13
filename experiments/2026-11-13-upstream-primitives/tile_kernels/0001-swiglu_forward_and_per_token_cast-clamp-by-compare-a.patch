@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Fri, 13 Nov 2026 20:19:05 +0800
+Subject: [PATCH] swiglu_forward_and_per_token_cast: clamp with
+ tl.clamp_symmetric when present
+
+Upstream base: deepseek-ai/TileKernels 66258df6 (v2.0.0); applies clean on
+v2.1.0 (c1cf914a) as well.
+
+Rationale: torch.clamp keeps a NaN; T.min/T.max return the other operand, so a
+NaN gate or up value became the clamp limit. tile-ai/tilelang 824c5c42 adds
+tl.clamp_symmetric (min.NaN.xorsign.abs, one instruction, vectorizable), which
+is the same semantics; use it when the compiler carries it and keep the
+compare-and-select form as the fallback so the series still applies on a tree
+without the intrinsic.
+
+Quality: on finite inputs bit-identical to the select form and to v2.0.0's
+unclamped path bounds; NaN passes through either way. count_clamp is False on
+our serving call site, so counts are untouched.
+
+Tests: tile_kernels' swiglu forward tests plus a finite-vector torch.equal
+against the select form and a NaN-propagation check (experiment receipts).
+
+Upstream status: local; candidate to propose to deepseek-ai/TileKernels once
+tilelang 824c5c42 is in a release.
+---
+ tile_kernels/quant/swiglu_forward_cuda.py | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/tile_kernels/quant/swiglu_forward_cuda.py b/tile_kernels/quant/swiglu_forward_cuda.py
+index b3a0dec..71e9c6d 100644
+--- a/tile_kernels/quant/swiglu_forward_cuda.py
++++ b/tile_kernels/quant/swiglu_forward_cuda.py
+@@ -209,8 +209,15 @@ def get_swiglu_forward_and_per_token_cast_kernel_cuda(
+                                     counts_local[1] += clamp_upper
+                                     counts_local[2] += clamp_lower
+                                 else:
+-                                    val_l = T.min(val_l, clamp_value)
+-                                    val_r = T.max(T.min(val_r, clamp_value), -clamp_value)
++                                    # torch.clamp semantics: a NaN passes through.
++                                    if hasattr(T, "clamp_symmetric"):
++                                        # min.NaN.xorsign.abs: one instruction, NaN kept.
++                                        val_l = T.clamp_symmetric(val_l, clamp_value)
++                                        val_r = T.clamp_symmetric(val_r, clamp_value)
++                                    else:
++                                        val_l = T.Select(val_l > clamp_value, clamp_value, val_l)
++                                        val_r = T.Select(val_r > clamp_value, clamp_value, val_r)
++                                        val_r = T.Select(val_r < -clamp_value, -clamp_value, val_r)
+                             if use_fast_certificate:
+                                 val = T.alloc_var(
+                                     T.float32,
+@@ -263,8 +270,13 @@ def get_swiglu_forward_and_per_token_cast_kernel_cuda(
+                                         # Clamp counts were already accumulated in the main
+                                         # path; fallback recomputes values only and must not
+                                         # count the same elements again.
+-                                        val_l = T.min(val_l, clamp_value)
+-                                        val_r = T.max(T.min(val_r, clamp_value), -clamp_value)
++                                        if hasattr(T, "clamp_symmetric"):
++                                            val_l = T.clamp_symmetric(val_l, clamp_value)
++                                            val_r = T.clamp_symmetric(val_r, clamp_value)
++                                        else:
++                                            val_l = T.Select(val_l > clamp_value, clamp_value, val_l)
++                                            val_r = T.Select(val_r > clamp_value, clamp_value, val_r)
++                                            val_r = T.Select(val_r < -clamp_value, -clamp_value, val_r)
+                                     val = T.alloc_var(T.float32, init=(val_l / (1 + T.exp(-val_l))) * val_r)
+                                     if with_weight:
+                                         val = val * topk_weights_var
+-- 
+2.51.2
+
