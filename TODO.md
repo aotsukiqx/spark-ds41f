@@ -210,10 +210,20 @@ collectives, and DSpark drafting.
 6. **All-reduce arrival skew and RoCE proxy core affinity.** Rank 0 also runs
    the API server, and `sparknet` proxy threads run without explicit CPU core
    affinity on GB10's mixed core types; test pinning them to fast cores.
+   *Bounded 2026-11-13:* the production container's cpuset is already `5-9,15-19`,
+   the two fast clusters (capacity 997–1024 against 718/731); no serving thread
+   can reach a slow core, and nothing in the series calls `sched_setaffinity`.
+   What remains is splitting the ten fast cores between engine, proxy and
+   watchdog threads, which needs CPU contention under load
+   (`experiments/2026-11-13-upstream-primitives/lever-bounds.md`).
 7. **A RoCE one-shot broadcast for adaptive verification.** Adaptive
    verification broadcasts rank 0's confidence snapshot every decode step
    through NCCL (`adaptive_verification.py`). Bound its share of the step from
    decode traces and screen `sparknet`'s one-shot broadcast path if material.
+   *Closed 2026-11-13:* the snapshot is 320–640 bytes per step (16 requests × 5
+   draft steps × 1–2 confidence rows), 4–10 µs against a 21–28 ms step, i.e.
+   0.014–0.05% — two orders below this site's narrowest CI. Reopens only if a
+   trace shows the broadcast stalling the loop.
 
 ## Speculative decoding
 
@@ -378,6 +388,15 @@ Remaining kernel-level investigations:
 
 - **No fallbacks** (owner, 2026-10-14): every collective or kernel dispatch path
   must either be the tested production path or raise with a traceback.
+- **The clamp patch carries a silent fallback (2026-11-13).**
+  `experiments/2026-11-13-upstream-primitives/tile_kernels/0001` guards the
+  `T.clamp_symmetric` call with `hasattr(T, "clamp_symmetric")` so the patch also
+  applies to a tree without the backport. The shipped image
+  (`spark-ds41f:1107-upstream-primitives`) carries that guarded form; both
+  branches were measured bit-identical, and the intrinsic branch is the one that
+  ran. Replace the guard with an import-time assertion in the first candidate
+  that rebuilds TileKernels; the record of the built image is not rewritten
+  retroactively.
 - The one-read `fill_defaults` fix (`0019`) is still needed on PyTorch main.
 - The NCCL IB send-path fence patch should be dropped once upstream releases the
   fix.
