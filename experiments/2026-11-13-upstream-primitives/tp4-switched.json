@@ -10,7 +10,8 @@
       "expected_labels": {
         "local.spark-ds41f.vllm.tree": "ed1bdb7a7684da33d403a055521ac0c4dd7ca670",
         "local.spark-ds41f.tilelang.tree": "905b10089b08c88175867a0fbebb058a46461b6f",
-        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0",
+        "local.spark-ds41f.tile_kernels.tree": "fb6f14b9679461b825d3f570ed99167782ae83a1"
       }
     },
     "upstreams_config": "experiments/2026-11-13-upstream-primitives/upstreams.lock.json"
