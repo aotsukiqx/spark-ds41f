@@ -184,6 +184,14 @@ collectives, and DSpark drafting.
    two grouped GEMMs. Keeping routed tiles resident across `FC1 -> SwiGLU -> FC2`
    (or fusing the SwiGLU + MXFP8 requantization epilogue over live tiles) avoids
    the global intermediate round-trip and extra kernel launch per layer.
+   *Corrected 2026-11-13:* the epilogue half of this was banked by `0756`
+   (`experiments/2026-10-18-r6w-swiglu`: TileKernels' 22 µs walk replaced by
+   `moe_swiglu_cast`, 1.5 µs at one row, engine grid −2.17% ±0.15%). What remains
+   is the persistent residency across the two grouped GEMMs, whose value is the
+   launch and dependency boundaries, not the 22 µs — **do not count 2.4–3.5% a
+   second time**. Bound it from a decode profile (the plan in
+   `experiments/2026-11-13-upstream-primitives/lever-bounds.md`, item 5) before
+   implementing.
 2. **Direct producer writes (`WO-B` / `moe_combine`) into registered `sparknet`
    RoCE send buffers** (~1.3–1.6% decode ceiling). `1107` overlaps collective
    launches via PDL (`0753`, `0755`, `0756`), but `roce_all_reduce` still stages
