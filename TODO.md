@@ -198,6 +198,13 @@ collectives, and DSpark drafting.
    an explicit `cudaMemcpyAsync` from the producer output tensor into
    `comm_buf` (116 launches per step). Writing final BF16 outputs directly into
    the registered RoCE send buffer removes the staging copy.
+   *Scope 2026-11-13:* the staging copy lives inside the pinned
+   sparknet/b12x runtime (`b12x.comm.roce`, reached through
+   `CudaCommunicator`'s `custom_all_reduce`), not in a vLLM-side wrapper, so this
+   needs a sparknet or b12x change that exposes the registered buffer plus the
+   producer kernels in `wo.py` / `moe.py` writing into it — not a patch-series
+   edit alone. It is also the one lever that removes GPU work rather than idle
+   time, so it keeps its ceiling.
 3. **Q-B and indexer Q-B tile-contiguous weight layout.** Both projections win
    in isolation but trail by 3–5% per call in serving when reading row-major
    weights. Screen a tile-contiguous weight layout for the decode projections,
@@ -211,10 +218,23 @@ collectives, and DSpark drafting.
    - **Greedy argmax in the head epilogue:** write each tile's `(max, index)`
      pair instead of full FP32 logits when all active requests are greedy (~12 MB
      less written and read per TP4 call).
+     *Checked 2026-11-13:* the epilogue kernels already exist
+     (`packed_vocab_greedy_partials` and the Markov variants in `vocab.py`) and
+     run for the drafter's vocabulary-parallel greedy steps
+     (`spec_decode/dspark/speculator.py`). The target head still goes through
+     `packed_vocab_projection` (full logits) in
+     `model_executor/layers/logits_processor.py`; read its per-row gate before
+     calling this open or banked.
 5. **A second stream inside the decode graph.** Overlap the shared expert with
    routed MoE, and attention key/indexer-key writes with the query path, on a
    second CUDA stream captured into the graph. First bound how much of the
    latency-bound bucket is serial dependency rather than SM occupancy.
+   *Closed 2026-11-13:* profiled boots of `1107` (c1 and c8, rank 0, kernel
+   union) show the GPU busy **98.9%** of the step at c1 and **99.25%** at c8 —
+   the latency-bound bucket is 0.49 ms of 43.4 ms and 0.77 ms of 102.6 ms, made
+   of per-step metadata launches, not a stall between the GEMMs. A second stream
+   can only recover idle time, and there is none to recover
+   (`experiments/2026-11-13-upstream-primitives/profile-results.md`).
 6. **All-reduce arrival skew and RoCE proxy core affinity.** Rank 0 also runs
    the API server, and `sparknet` proxy threads run without explicit CPU core
    affinity on GB10's mixed core types; test pinning them to fast cores.
