@@ -64,3 +64,11 @@ or recipe change.
 
 Not a promotion request. The lock is untouched; production stays
 `spark-ds41f-1107`. Serving A/B needs a lab window and the owner's call.
+
+## Status log
+
+- 2026-11-13: series assembled and verified (15-patch chain reaches tree
+  `905b1008…`, identical to the cherry-picks); TileKernels patch applies on
+  v2.0.0 and v2.1.0; item 2 driven to a decision (`ITEM2-tilekernels-210.md`);
+  wheels building in a side container on the head (cpuset 0-4,10-14, so the
+  serving container's cores are untouched); bench matrix staged.
