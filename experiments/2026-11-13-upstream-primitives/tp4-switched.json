@@ -1,0 +1,18 @@
+{
+  "notes": "upstream-primitives candidate at the spark-eb1a site: 1107's sources plus TileLang backports of tl.clamp_symmetric (824c5c42) and the L1/L2 prefetch intrinsics (35850c06), and the TileKernels clamp patch re-expressed through the intrinsic. Screened kernel-level 2026-11-13 (bit-exact, -4..-5% on the SwiGLU+cast kernel); this arm is the two-boot serving qualification. Site facts (4 KiB kernel, 716,800-token requests, node-local model) come from the site profile it extends.",
+  "extends": {
+    "config": "config/cluster-eb1a.local.json",
+    "shape": "tp4-switched"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-upstream-primitives",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "ed1bdb7a7684da33d403a055521ac0c4dd7ca670",
+        "local.spark-ds41f.tilelang.tree": "905b10089b08c88175867a0fbebb058a46461b6f",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-13-upstream-primitives/upstreams.lock.json"
+  }
+}
