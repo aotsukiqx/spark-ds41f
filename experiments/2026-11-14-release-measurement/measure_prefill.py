@@ -25,7 +25,8 @@ def post(base: str, path: str, body: dict, timeout: float = 3600) -> dict:
     request = urllib.request.Request(base + path, data=json.dumps(body).encode(),
                                      headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read())
+        payload = response.read()
+        return json.loads(payload) if payload.strip() else {}
 
 
 def get(base: str, path: str) -> dict:
