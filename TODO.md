@@ -300,12 +300,17 @@ NCCL Ring and sparse-MLA `block_H=16` (`2` CTAs/head, `0740`), unconditional
 (`0743`) are all active.
 
 Open levers:
-- **Sequence-parallel MoE input (`experiments/2026-10-14-sp-moe-gather`).** Each
+- ~~**Sequence-parallel MoE input (`experiments/2026-10-14-sp-moe-gather`).**~~ Each
   encoder layer all-gathers BF16 rows, then casts them to MXFP8 twice (shared
   and routed experts) and routes them on all $T$ rows on every rank (~4.4 ms a
   layer at an 8,096-row chunk). Routing and casting each rank's own shard before
   all-gathering MXFP8 rows with their scales and routes preserves exact bits
   with a ~3–3.9% prefill ceiling.
+  *Banked 2026-11-14:* vLLM `0720` ("Require the producer cast and local router
+  for sequence-parallel MoE") ships the contract, `kernels.sp_moe_inputs` runs it
+  in `nvidia/model.py` ("SP: route local rows, gather MXFP8 + routes"), and
+  `tests/models/test_deepseek_v4_1_sp_prefill.py` covers it; the TileLang experts
+  take precast rows through `linear.provide_mxfp8`. Do not plan this again.
 - **First request after a restart** is ~0.37 s slower to its first token than
   subsequent requests. Screen `CUDA_MODULE_LOADING=EAGER` (checking boot time
   impact) and sample the first request with `py-spy dump --nonblocking`.
