@@ -1,0 +1,19 @@
+variant=old tilelang=/usr/local/lib/python3.12/dist-packages/tilelang/__init__.py
+rows=   96     71.93 us/iter
+rows=  512     75.21 us/iter
+rows= 4096     69.53 us/iter
+nan_probe: row0 has NaN = False, out[0,:4] = [-448.0, 8.0, 12.0, 8.0]
+variant=mid tilelang=/usr/local/lib/python3.12/dist-packages/tilelang/__init__.py
+rows=   96     70.72 us/iter
+rows=  512     73.14 us/iter
+rows= 4096     68.26 us/iter
+nan_probe: row0 has NaN = True, out[0,:4] = [nan, 52.0, 80.0, 56.0]
+variant=new tilelang=/out/tlnew/tilelang/__init__.py
+rows=   96     67.38 us/iter
+rows=  512     70.14 us/iter
+rows= 4096     65.36 us/iter
+nan_probe: row0 has NaN = True, out[0,:4] = [nan, 52.0, 80.0, 56.0]
+inputs identical across variants: True
+mid (Select) vs new (clamp_symmetric) outputs bit-exact: True
+differing elements: 0 of 28311552
+PASS: finite path bit-identical

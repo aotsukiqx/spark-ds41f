@@ -72,3 +72,38 @@ Not a promotion request. The lock is untouched; production stays
   v2.0.0 and v2.1.0; item 2 driven to a decision (`ITEM2-tilekernels-210.md`);
   wheels building in a side container on the head (cpuset 0-4,10-14, so the
   serving container's cores are untouched); bench matrix staged.
+
+## Results (2026-11-13, kernel-level screen on spark-eb1a)
+
+Three variants of the same kernel, same inputs, same harness
+(`receipts/bench_clamp.py`); `mid` vs `new` isolates the clamp change:
+
+| rows | old (T.min) µs | mid (Select) µs | new (clamp_symmetric) µs | new/mid |
+| ---: | ---: | ---: | ---: | ---: |
+| 96 | 71.93 | 70.72 | 67.38 | 0.953 |
+| 512 | 75.21 | 73.14 | 70.14 | 0.959 |
+| 4096 | 69.53 | 68.26 | 65.36 | 0.958 |
+
+- **Correctness**: `mid` vs `new` outputs **bit-exact** (0 of 28,311,552
+  elements differ); NaN probe: old turns a NaN gate into the clamp limit
+  (`[-448, 8, 12, 8]`), mid and new both pass the NaN through — the rule
+  patch 0001 exists for, now one instruction.
+- **Speed**: the intrinsic saves ~4-5% of the SwiGLU+cast kernel at every row
+  count. In serving that kernel is 23-30 µs/layer (~3% of a decode step), so
+  the honest ceiling is **~0.15% of a decode step** — free, but small; the
+  serving claim still needs the two-boot paired suites before it is stated.
+- **Prefetch smoke**: `T.prefetch_l2(element, "evict_last")` compiles and runs
+  on SM121 with the backported wheel (the policy argument is a string enum,
+  not `address_of` + bool — recorded in `ITEM3-prefetch-design.md`).
+- Wheels kept node-local at `~/nvmodels/wheelout/` (SHAs in
+  `receipts/wheels.sha256`); build and bench containers removed; scratch
+  trees cleaned. Production serving untouched throughout (single container,
+  Up throughout).
+
+## Where this stops
+
+Everything above is kernel-level. Promotion requires: a candidate image
+carrying the 15-patch TileLang series and the new TileKernels patch, a lab
+window with two boots, the release/single-stream/sampled suites against
+`spark-ds41f-1107`'s recorded reference, and the quality gate — the owner's
+call, not this folder's.

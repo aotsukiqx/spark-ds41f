@@ -1,0 +1,40 @@
+{
+  "recorded": "2026-11-13",
+  "host": "spark-eb1a, side containers from spark-ds41f:1107 (production serving untouched, cpuset 0-4,10-14)",
+  "kernel": "tile_kernels swiglu_forward_and_per_token_cast, TP4-rank geometry: 384 experts, hidden 576, clamp 10.0, bf16 in, e4m3/32 out, 48 SMs",
+  "rows": [96, 512, 4096],
+  "variants": {
+    "old": "image tilelang + pristine TileKernels 2.0.0 (T.min/T.max clamp)",
+    "mid": "image tilelang + patched TileKernels (compare-and-select clamp)",
+    "new": "backported tilelang (0014) + patched TileKernels (clamp_symmetric)"
+  },
+  "us_per_iter": {
+    "old":  {"96": 71.93, "512": 75.21, "4096": 69.53},
+    "mid":  {"96": 70.72, "512": 73.14, "4096": 68.26},
+    "new":  {"96": 67.38, "512": 70.14, "4096": 65.36}
+  },
+  "new_over_mid": {"96": 0.9528, "512": 0.9590, "4096": 0.9575},
+  "correctness": {
+    "mid_vs_new_bit_exact": true,
+    "differing_elements": 0,
+    "of": 28311552,
+    "nan_probe": {
+      "old": "NaN became the clamp limit (out row0 = [-448, 8, 12, 8]): the bug 0001 exists to fix",
+      "mid": "NaN passes through (torch.clamp rule)",
+      "new": "NaN passes through, same row as mid"
+    }
+  },
+  "prefetch_smoke": {
+    "api": "T.prefetch_l2(element, 'evict_last' | 'evict_normal' | None); takes a buffer element, not address_of",
+    "result": "compiled and ran on SM121 with the backported wheel, output correct"
+  },
+  "caveats": [
+    "single run per point on a GPU shared with live serving; the three row counts agree within 0.6 pp, and the same harness was used for every variant",
+    "per-iteration cost includes output allocation, identical across variants",
+    "kernel-level only: the serving claim still needs the paired suites on two boots (a lab window)"
+  ],
+  "artifacts": {
+    "wheels": "node-local ~/nvmodels/wheelout/ (tilelang 47.5 MB, tile_kernels 253 KB); SHAs in receipts/wheels.sha256",
+    "scripts": "bench_clamp.py, compare_clamp.py, prefetch_smoke.py, run_matrix.sh copied into this folder"
+  }
+}
