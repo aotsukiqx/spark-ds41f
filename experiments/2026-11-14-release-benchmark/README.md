@@ -66,3 +66,18 @@ So this window adds the site's own reference: boot 2 used the plain `1107` image
 on the same site and arm settings (`1107-dev.json`), and the comparison to make
 is candidate vs that same-site run, with the candidate's two boots as its repeat.
 The cross-fleet table is kept only as evidence of why it cannot be used.
+
+## The site's reference is now recorded
+
+`manifests/suites/2026-11-14-spark-ds41f-1107-site-tp4-switched/` holds the plain
+`1107` run this window measured on spark-eb1a (suite, grid, c16, c8, poisson,
+prefill, stalls, conditions; 248 KB, no model corpus, so its model step stays
+"not kept" exactly like the sp1-sp4 record). Future candidates on this site
+compare against it with the same table command, which makes the comparison
+same-fleet by construction:
+
+```
+python3 scripts/servebench_suite_table.py <run> \
+  manifests/suites/2026-11-14-spark-ds41f-1107-site-tp4-switched \
+  <candidate> <candidate>-again
+```
