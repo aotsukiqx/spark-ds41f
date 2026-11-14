@@ -71,7 +71,8 @@ if [ "$secure_boot" -eq 1 ]; then
     [ -n "${DGX_MOK_DIR:-}" ] && die "DGX_MOK_DIR is set but holds no MOK.priv/MOK.der pair"
     ( cd "$source_dir" && ./scripts/generate-signing-key )
   fi
-  if ! sudo mokutil --test-key "$key_dir/MOK.der" >/dev/null 2>&1; then
+  # `mokutil --test-key` exits 0 whether or not the key is enrolled; its output is the signal.
+  if ! sudo mokutil --test-key "$key_dir/MOK.der" 2>&1 | grep -q "already enrolled"; then
     if [ "$enroll" -eq 1 ]; then
       say "importing the key: mokutil asks for a one-time password; you will re-enter it at the firmware screen"
       sudo mokutil --import "$key_dir/MOK.der"
