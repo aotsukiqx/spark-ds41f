@@ -1,23 +1,137 @@
 #!/usr/bin/env bash
-# Install dgx-spark-fan-control v0.1.4 and build its DKMS module for installed kernels.
+# Install dgx-spark-fan-control v0.1.4 on one DGX Spark: clone the source, build the
+# module with DKMS (signed when Secure Boot is on), install the CLI and the service,
+# and load it.
+#
+# usage: scripts/install-fan-control [--source DIR] [--enroll] [--no-service]
+#
+# Run on the Spark itself, as the user who will own the signing key; every step that
+# needs root uses sudo. Re-running is safe: a finished install reports itself and a
+# half-finished one resumes.
+#
+# Secure Boot needs one console step per node. The module is only loadable once its
+# key is enrolled, and enrollment happens at the firmware screen during a reboot.
+# Without --enroll the script prepares everything (packages, source, key, pending
+# state check) and stops with exit 3 and the commands to run; with --enroll it runs
+# `mokutil --import` on this terminal, which asks for a one-time password, and then
+# asks for the console reboot.
+#
+# Exit codes: 0 installed and loaded; 2 prerequisites missing; 3 reboot with console
+# needed to enroll the key.
 set -euo pipefail
 
 version=v0.1.4
-repo="https://github.com/christopherowen/dgx-spark-fan-control.git"
-source_dir="$HOME/projects/dgx-spark-fan-control"
+repo=https://github.com/christopherowen/dgx-spark-fan-control.git
+source_dir="${DGX_FAN_CONTROL_DIR:-$HOME/nvmodels/dgx-spark-fan-control}"
+key_dir="${DGX_MOK_DIR:-$HOME/.local/share/dgx-spark-fan-control/keys}"
+root_key_dir=/root/.local/share/dgx-spark-fan-control/keys
+module=dgx_ec_fan_control
+service=dgx-fan-control.service
+enroll=0
+install_service=1
 
-if [ ! -e "$source_dir" ]; then
-  git clone --branch "$version" "$repo" "$source_dir"
-else
-  git -C "$source_dir" fetch --tags origin
-  git -C "$source_dir" checkout --detach "$version"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --source) source_dir="$2"; shift 2 ;;
+    --enroll) enroll=1; shift ;;
+    --no-service) install_service=0; shift ;;
+    -h|--help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) printf 'install-fan-control: unknown argument %s\n' "$1" >&2; exit 2 ;;
+  esac
+done
+
+say() { printf '%s\n' "$*" >&2; }
+die() { printf 'install-fan-control: %s\n' "$*" >&2; exit 2; }
+
+[ "$(id -u)" -ne 0 ] || die "run as your own user, not root: the signing key belongs in your home"
+command -v sudo >/dev/null || die "sudo is required"
+kernel=$(uname -r)
+secure_boot=0
+if mokutil --sb-state 2>/dev/null | grep -q "SecureBoot enabled"; then
+  secure_boot=1
 fi
 
-cd "$source_dir"
-sudo ./install.sh
-for mod_dir in /lib/modules/*; do
-  k=$(basename "$mod_dir")
-  if [ -d "$mod_dir/build" ]; then
-    sudo dkms autoinstall -k "$k"
+say "[1/6] packages for $kernel (Secure Boot $([ "$secure_boot" -eq 1 ] && echo on || echo off))"
+sudo apt-get update -q
+sudo apt-get install -y -q git build-essential "linux-headers-$kernel" python3 openssl mokutil dkms
+
+say "[2/6] source: $source_dir at $version"
+if [ ! -d "$source_dir/.git" ]; then
+  mkdir -p "$(dirname "$source_dir")"
+  git clone --branch "$version" "$repo" "$source_dir"
+else
+  git -C "$source_dir" fetch -q --tags origin
+  git -C "$source_dir" checkout -q --detach "$version"
+fi
+( cd "$source_dir" && ./scripts/check )
+
+if [ "$secure_boot" -eq 1 ]; then
+  say "[3/6] signing key in $key_dir"
+  if [ ! -s "$key_dir/MOK.priv" ] || [ ! -s "$key_dir/MOK.der" ]; then
+    [ -n "${DGX_MOK_DIR:-}" ] && die "DGX_MOK_DIR is set but holds no MOK.priv/MOK.der pair"
+    ( cd "$source_dir" && ./scripts/generate-signing-key )
   fi
-done
+  if ! sudo mokutil --test-key "$key_dir/MOK.der" >/dev/null 2>&1; then
+    if [ "$enroll" -eq 1 ]; then
+      say "importing the key: mokutil asks for a one-time password; you will re-enter it at the firmware screen"
+      sudo mokutil --import "$key_dir/MOK.der"
+    fi
+    say ""
+    say "the MOK key is not enrolled yet, so the module cannot load under Secure Boot."
+    say "on this node, with a console attached:"
+    say "  1. $0 --enroll        # if you have not imported the key yet (asks for a password)"
+    say "  2. sudo systemctl reboot"
+    say "  3. at the firmware screen: Enroll MOK -> Continue -> Yes -> the password -> reboot"
+    say "  4. $0                 # builds, signs, installs and loads the module"
+    say ""
+    say "then verify with: mokutil --test-key $key_dir/MOK.der"
+    exit 3
+  fi
+  sudo install -d -m 0700 "$root_key_dir"
+  sudo install -m 0600 "$key_dir/MOK.priv" "$root_key_dir/MOK.priv"
+  sudo install -m 0644 "$key_dir/MOK.der" "$root_key_dir/MOK.der"
+  if ! sudo grep -q '^[[:space:]]*mok_signing_key=' /etc/dkms/framework.conf; then
+    sudo tee -a /etc/dkms/framework.conf >/dev/null <<EOF
+mok_signing_key="$root_key_dir/MOK.priv"
+mok_certificate="$root_key_dir/MOK.der"
+EOF
+  fi
+else
+  say "[3/6] Secure Boot off: the module is built unsigned"
+fi
+
+say "[4/6] DKMS build for $kernel"
+sudo install -d "/usr/src/$module-$version/kernel"
+sudo install -m 0644 "$source_dir/dkms.conf" "/usr/src/$module-$version/dkms.conf"
+sudo install -m 0644 "$source_dir/kernel/Makefile" "$source_dir/kernel/$module.c" \
+  "/usr/src/$module-$version/kernel/"
+if ! dkms status -m "$module" -v "$version" -k "$kernel" 2>/dev/null | grep -q installed; then
+  dkms add -m "$module" -v "$version" >/dev/null 2>&1 || true
+  sudo dkms build -m "$module" -v "$version" -k "$kernel"
+  sudo dkms install -m "$module" -v "$version" -k "$kernel"
+fi
+dkms status -m "$module"
+signer=$(modinfo -F signer "$module" 2>/dev/null || true)
+[ -z "$signer" ] || say "module signer: $signer"
+
+say "[5/6] CLI, boot loader entry and service"
+sudo install -D -m 0755 "$source_dir/userspace/dgx_fan_control.py" /usr/local/sbin/dgx-fan-control
+sudo install -D -m 0644 "$source_dir/systemd/$module.conf" "/etc/modules-load.d/$module.conf"
+sudo install -D -m 0644 "$source_dir/systemd/$service" "/etc/systemd/system/$service"
+sudo systemctl daemon-reload
+sudo modprobe "$module"
+status=$(dgx-fan-control status 2>&1 | head -1 || true)
+say "status: $status"
+case "$status" in
+  state=*) : ;;
+  *) die "the module loaded but the fan device did not answer (state= expected); see docs/troubleshooting.md upstream" ;;
+esac
+if [ "$install_service" -eq 1 ]; then
+  sudo systemctl enable --now "$service"
+  say "service: $(systemctl is-enabled "$service"), $(systemctl is-active "$service")"
+fi
+
+say "[6/6] done on $(hostname)"
+say "verify:  dgx-fan-control status | head -3"
+say "         bin/spark --cluster-config config/cluster-eb1a.local.json doctor --live | grep -i fan"
+say "revert:  sudo systemctl disable --now $service && sudo dgx-fan-control automatic"

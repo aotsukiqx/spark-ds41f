@@ -248,6 +248,13 @@ curve. With Secure Boot, its installation creates and enrolls a MOK signing
 key, and the memory saver's install script in [stage 2](#2-kernel-64-kib-profiles)
 signs with the same key.
 
+`scripts/install-fan-control` performs the whole install on the node it runs on:
+packages, a checkout at `~/nvmodels/dgx-spark-fan-control`, the DKMS build with
+DKMS signing when Secure Boot is on, the CLI, the boot-load entry and the service.
+With Secure Boot the key must be enrolled at the firmware screen during a reboot,
+which no remote command can do: the script stops with exit 3 and the commands
+(`--enroll`, `sudo systemctl reboot`, then the script again) until that is done.
+
 Install its `dgx-fan-control.service` as well; `doctor --live` warns until it
 is installed. `bin/spark bench` requires it: it starts the
 service's performance curve on every node while it measures, so every
