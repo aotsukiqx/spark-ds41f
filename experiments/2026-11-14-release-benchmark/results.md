@@ -42,13 +42,29 @@ on every prefill size and -4.75% at c16 while the same run's decode grid was
 spark-eb1a. The uniform offset is the fleet, not the change — which is why the
 same-site reference above had to be measured.
 
-## Open puzzle
+## The `release` exit code is the thermal guard, not a failure
 
-The `release` suite exits 1 on this site for **both** images (candidate and 1107;
-`single-stream` and `sampled` exit 0). No step failed (`"failed": []`, every
-step's summary `"failed": 0`), and no `FAIL:` line is printed. Not
-candidate-specific; recorded for a later look at `bin/spark bench`'s suite exit
-path.
+Solved the same day: `conditions.json` records
+`halted: "spark-141e: GPU at 82 C is within 5 C of its thermal slowdown limit"`
+for the candidate boot and `83 C ... 4 C` for the site-1107 boot. The bench
+returns `SUITE_FAILED` when `halted` is set, which is why both images exit 1 with
+`"failed": []`, no `FAIL:` line and every step at exit 0. No node recorded
+thermal-slowdown time, so the numbers stand.
+
+Conditions were symmetric between the two runs:
+
+| Node | Candidate max GPU | Reference max GPU | Slowdown limit |
+| --- | ---: | ---: | ---: |
+| spark-eb1a | 77 °C | 79 °C | 87 °C (10-11 °C headroom) |
+| spark-141e | **84 °C** | **85 °C** | 87 °C (**2-4 °C headroom**) |
+| spark-a89f | 79 °C | 78 °C | 87 °C |
+| spark-2fe7 | 79 °C | 80 °C | 87 °C |
+
+So the comparison is like-for-like, but this site runs its 141e rank within a few
+degrees of the slowdown limit whenever the release suite runs, because the site
+has no fan control (owner decision). Two consequences: a release benchmark here
+must quote the headroom, and an actual slowdown would invalidate the run (the
+bench prints `FAIL: ... thermal slowdown` for that case; it did not).
 
 ## Artifacts
 
