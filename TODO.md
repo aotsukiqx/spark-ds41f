@@ -311,12 +311,18 @@ Open levers:
   in `nvidia/model.py` ("SP: route local rows, gather MXFP8 + routes"), and
   `tests/models/test_deepseek_v4_1_sp_prefill.py` covers it; the TileLang experts
   take precast rows through `linear.provide_mxfp8`. Do not plan this again.
-- **First request after a restart** is ~0.37 s slower to its first token than
+- ~~**First request after a restart** is ~0.37 s slower to its first token than
   subsequent requests. Screen `CUDA_MODULE_LOADING=EAGER` (checking boot time
-  impact) and sample the first request with `py-spy dump --nonblocking`.
-- **Indexer selection at 200K–1M context.** Split long-context indexer time into
-  MXFP4 scoring vs top-k selection; if top-k selection is a measurable share at
-  500K–1M, screen a bounded radix top-k.
+  impact) and sample the first request with `py-spy dump --nonblocking`.~~
+  *Closed 2026-11-14:* measured on `1107`, the first request after a boot takes
+  0.172 s to its first token against 0.159 s for the same request warm — a 13 ms
+  gap, not 0.37 s (`experiments/2026-11-14-release-measurement/results-prefill-boot.md`).
+- **Indexer at 200K–1M context — the scoring pass, not the selection.**
+  *Measured 2026-11-14* on a 484K prefill: `indexer_score_kernel` is **15,637 ms of
+  71,060 ms (22.0%)**, the single largest kernel in prefill, while
+  `indexer_topk_segment_kernel` is 882 ms (1.2%). A bounded radix top-k can
+  therefore recover at most a fraction of 1.2% — do not build it. The lever is the
+  scoring GEMM's bytes and tiling at long context.
 - **NVMe interrupt coalescing stays off** on every node by the owner's decision
   (2026-10-02; prefill measured 0.7–1.6% slower with it on in
   `experiments/2026-10-02-nvme-coalescing`).
@@ -335,6 +341,9 @@ Open levers:
   module imports before engine spawn.
 - **Per-rank pre-processed weight image:** largest boot lever, if needed; must
   preserve MLA absorbed views and `e_score_correction_bias`.
+  *Measured 2026-11-14:* the boot reaches ready at **+123.7 s** (ranks launched at
+  +6.2 s), so this lever is worth at most ~90 s of start-up and no throughput —
+  housekeeping, not performance (`experiments/2026-11-14-release-measurement/results-prefill-boot.md`).
 - **Pitfalls:** warming the host page cache consumes `MemFree` that the GB10
   unified memory allocator needs; keep startup caches bounded.
 
