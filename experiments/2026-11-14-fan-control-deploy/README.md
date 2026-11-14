@@ -55,3 +55,43 @@ commands.
 `sudo systemctl disable --now dgx-fan-control.service` returns to NVIDIA's
 factory curve; `sudo dgx-fan-control automatic` clears a manual floor; the module
 comes off with `sudo dkms remove -m dgx_ec_fan_control -v v0.1.4 --all`.
+
+## Blocked by the EC firmware on this fleet (2026-11-14)
+
+The console enrollment on spark-eb1a succeeded — the key is enrolled
+(`mokutil --list-enrolled` holds `CN=DGX Spark local module signing`,
+`89:6c:e7:d8…`, beside Canonical's CA, and nothing is pending) — and the module
+loads. Its probe then refuses the device:
+
+```
+dgx-ec-fan-control arm-ffa-18: packet service partition=0x8003 properties=0x109 FF-A=1.2
+dgx-ec-fan-control arm-ffa-18: packet submit operation=0x1 status=0x5
+dgx-ec-fan-control arm-ffa-18: error -EIO: refusing fan-floor cooling device
+dgx-ec-fan-control arm-ffa-18: probe with driver dgx-ec-fan-control failed with error -5
+```
+
+`dgx-fan-control status` therefore reports `expected one 'dgx_ec_fan_floor'
+cooling device, found 0`. The driver is an FF-A client: it matches DMI
+(`NVIDIA` / `NVIDIA_DGX_Spark` / `P4242` — all match here), FF-A 1.2, shared
+partition `0x8003`, properties `0x109`, then submits operation 1 and expects the
+observed answer. This board answers `status=0x5`, outside the contract, so the
+driver declines by design rather than writing to an unknown interface.
+
+The board's BIOS is `5.36_0ACUM028` (2026-09-04). Upstream v0.1.4 records its
+validation on EC firmware 3.5.8 / SoC 2.155.11 with DGX OS 7.5.0 and kernel
+6.17.0-1029, and states that compatibility with later firmware is unqualified.
+Only `v0.1.4` exists upstream (checked 2026-11-14), so there is no fixed release
+to move to.
+
+## Reverted, and what stays
+
+Every node: pending MOK import revoked (`mokutil --revoke-import`), the
+modules-load entry, the unit and the loaded module removed, DKMS module removed
+on spark-eb1a. The signing key pair and the source checkout stay for a retry
+once upstream supports this EC; the enrolled MOK on spark-eb1a is harmless.
+
+Consequences: the bench keeps `--cool-below 0`, the release suite keeps halting
+on the thermal guard (exit 1 with `halted: spark-141e ... 2-4 C headroom`), and
+spark-141e's margin does not improve. Reopening needs an upstream driver that
+accepts `status=0x5` (or NVIDIA's own fan-floor interface on this BIOS), then the
+same enrollment path — the key and the installer are ready.
