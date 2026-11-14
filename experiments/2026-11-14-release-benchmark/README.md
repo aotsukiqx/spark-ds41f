@@ -48,3 +48,21 @@ the lab testbeds this section names are not this site).
 # then single-stream and sampled into -single-stream / -sampled companions
 # boot 2 repeats with --corpus <boot-1>/model.json.gz and label ...-again
 ```
+
+## The repository's records are other fleets (found 2026-11-14)
+
+The tp4-switched suite record `manifests/suites/2026-11-07-spark-ds41f-1107-tp4-switched`
+was captured on **sp1-sp4**, and the legacy comparison record
+`manifests/benchmarks/2026-11-07-spark-ds41f-1107-switched.json` on **dgx1-dgx4**
+(`metadata.identity.nodes`). This site is spark-eb1a/141e/a89f/2fe7 and has no
+recorded suite of its own.
+
+Comparing across fleets produces a uniform offset, not a verdict: the first table
+(candidate vs the sp1-sp4 record) read −6% to −12% on *every* prefill size,
+−4.75% at c16 and `same` at c8, while the same run's grid was *faster* at its two
+small points. A two-intrinsic patch cannot do that; a different four-node set can.
+
+So this window adds the site's own reference: boot 2 used the plain `1107` image
+on the same site and arm settings (`1107-dev.json`), and the comparison to make
+is candidate vs that same-site run, with the candidate's two boots as its repeat.
+The cross-fleet table is kept only as evidence of why it cannot be used.
