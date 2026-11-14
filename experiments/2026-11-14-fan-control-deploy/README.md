@@ -95,3 +95,23 @@ on the thermal guard (exit 1 with `halted: spark-141e ... 2-4 C headroom`), and
 spark-141e's margin does not improve. Reopening needs an upstream driver that
 accepts `status=0x5` (or NVIDIA's own fan-floor interface on this BIOS), then the
 same enrollment path — the key and the installer are ready.
+
+## Is there an official NVIDIA method? No (surveyed 2026-11-14)
+
+| Candidate | Verdict on spark-eb1a |
+| --- | --- |
+| BMC / IPMI fan control (`nvfancontrol`, DGX Station style) | none: `ipmitool` exists but `/dev/ipmi0` does not; no NVIDIA fan unit or binary in the image |
+| `nvidia-smi` fan control | not exposed: `fan.speed` is `N/A`; only thermals are readable |
+| ACPI platform fans (`PNP0C0B:00/01`, `cooling_device0/1`, 0-100) | present and writable, but **inert**: `cur_state=100` was accepted, `hwmon0/fan1_input` stayed 0 and the GPU moved 50 -> 49 °C in 60 s. Not wired to the physical fans |
+| EC firmware channel | **official and active**: `fwupdmgr` device `8c948e1d…`, current `0x03000d07` (LVFS release 152272, created 2026-09-28, urgency High; supersedes `0x03000508`/`0x0300050b`) |
+| GPU clock/power caps | `nvidia-smi -lgc` is supported by this driver; `power.limit` is `N/A` |
+
+So NVIDIA exposes **no user fan control**: the curve belongs to the EC, and the only
+official levers are EC firmware updates (NVIDIA's content) and GPU clock caps.
+
+It also explains the refusal precisely: upstream v0.1.4 was validated on EC
+`0x03000508`; this fleet runs `0x03000d07`, whose EC answers the fan-floor
+operation with `status=0x5`, so the driver declines. Community work reports the
+same shift — the 0.3 EC branch changed the fan behaviour and a different project
+drives EC **command 5** rather than operation 1 — which means a correct driver for
+this EC would be new work, not a version bump.
