@@ -46,24 +46,36 @@ inefficient in shape: it is one kernel, and it is the same kernel per layer.
 | `all_gather` | 1,578 | 2,570 ms | avg 7.8 MB |
 | `all_reduce` | 1,408 | 1,631 ms | avg 3.6 MB |
 
-The all-reduce sizes are bimodal: 1,162 calls carry **10 KB** (`1 x 5120` BF16),
-while 29 calls carry 167 MB (`16,288 x 5120`, the chunk-sized SP reduction) and
-one carries 123 MB. The large ones are bandwidth work at the fabric's limit and
-are not interesting; the small ones are the finding:
+## Erratum (2026-11-14, same day, correlation check)
 
-- 1,162 calls of 10 KB, about **1.2 ms of CPU time each** (1.4 s in total). Over
-  RoCE a 10 KB collective should take tens of microseconds; the one-shot path this
-  repository already ships (`SPARKNET_ROCE_ALLREDUCE_DISPATCH_MAX_BYTES=2097152`,
-  BF16 supported) would serve them at that cost.
-- They are running through NCCL (`ncclDevKernel_SendRecv`, 2,470 launches,
-  8,905 ms of kernel time) instead — a ring handshake per call, roughly two
-  orders of magnitude above the payload's own cost.
+The first reading of this trace claimed the 1,162 ten-kilobyte all-reduces were
+running on NCCL's ring handshake. **That was wrong.** Torch's profiler links each
+`cpu_op` to its kernel through `External id` / `correlation`; joining the two in
+this trace shows:
 
-**Hypothesis worth one candidate window:** these per-step, single-row reductions
-are being dispatched to NCCL while the graph is captured (or from a communicator
-that never saw the RoCE policy), so each pays a ring handshake. Moving them onto
-the prepared one-shot path is bit-exact (same sum, same order in the one-shot
-protocol's reduction), needs no model change, and the addressable time is the
-1.4 s of CPU issue plus their share of the 8.9 s of SendRecv kernel time. Check
-`should_allreduce`'s size/dtype gate and where the graph capture registers the
-communicator before building anything.
+| Collective calls | Payload | Kernel that ran |
+| --- | --- | --- |
+| 1,162 | `1 x 5120` BF16 (10 KB) | **`oneshot_allreduce_kernel`** |
+| 162 / 40 / 8 / 4 / 2 | `45/128/2/6/3 x 5120` | `oneshot_allreduce_kernel` |
+| 580 all-gathers | `1 x 448` | `oneshot_allgather_kernel` |
+| 493 all-gathers | `4072 x 1792` (14.6 MB) | `ncclDevKernel_AllGather_RING_LL` |
+| 87 each | `4072 x 5120`, `32576 x 128`, `4072 x 512` | `ncclDevKernel_AllGather_RING_LL` |
+| 29 all-gathers | `16288 x 5120` (167 MB) | `ncclDevKernel_AllGather_RING_LL` |
+
+So the small collectives are **already on the one-shot path**; what NCCL carries
+is the large sequence-parallel exchange, at 14.6 MB and up, which is above the
+one-shot dispatch limits (`ALLREDUCE 2 MiB`, `ALLGATHER 4 MiB`) by design.
+
+The earlier "1.2 ms per 10 KB call" figure was CPU-side issue time (`cpu_op`
+durations), not a kernel cost, and it is not evidence of a wrong backend.
+
+### What this leaves
+
+The 20% collective share is large-tensor SP exchange at the fabric's rate. Moving
+it to the one-shot path is not an obvious win: that path's advantage is small-
+message latency, and 14.6–167 MB messages would need a registered capacity two
+orders above today's 4 MiB slot. **No clean candidate remains in the collectives**
+until either the exchange volume shrinks (fewer/larger tensors, a different
+sequence-parallel partition) or the one-shot path gains a multi-slot, large-payload
+mode worth its pinned memory.
+
