@@ -1,0 +1,11 @@
+{
+  "notes": "The promoted 1107 site profile with the engine's dev endpoints, as the site's own reference boot for the release suites (this site has no recorded suite; the repository's records are from sp1-sp4 and dgx1-dgx4).",
+  "extends": {
+    "config": "config/cluster-eb1a.local.json"
+  },
+  "set": {
+    "environment": {
+      "VLLM_SERVER_DEV_MODE": "1"
+    }
+  }
+}
