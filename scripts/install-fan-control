@@ -35,7 +35,7 @@ while [ $# -gt 0 ]; do
     --source) source_dir="$2"; shift 2 ;;
     --enroll) enroll=1; shift ;;
     --no-service) install_service=0; shift ;;
-    -h|--help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 0 ;;
     *) printf 'install-fan-control: unknown argument %s\n' "$1" >&2; exit 2 ;;
   esac
 done
