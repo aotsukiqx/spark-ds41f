@@ -1,0 +1,11 @@
+{
+  "notes": "The upstream-primitives candidate with the engine's dev endpoints, as servebench's release suite (engine grid) requires.",
+  "extends": {
+    "config": "experiments/2026-11-13-upstream-primitives/tp4-switched.json"
+  },
+  "set": {
+    "environment": {
+      "VLLM_SERVER_DEV_MODE": "1"
+    }
+  }
+}
