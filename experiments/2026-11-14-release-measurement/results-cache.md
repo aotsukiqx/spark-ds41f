@@ -28,9 +28,23 @@ pays prefill for its own tail only.
 First attempt was invalid: the "200 distinct" prompts were built as the same
 filler plus a suffix, so they *shared* the prefix and the pool never had to hold
 independent entries (measured hit rate 99.61%, and the original prefix survived).
-The corrected run gives each pressure prompt a unique leading identifier so the
+
+The corrected run gives each pressure prompt a unique leading identifier, so the
 200 prompts are 200 unrelated 65K prefixes (~13M tokens against the 11M-token
-pool); its result is appended below when it completes.
+pool). It was **stopped after 16 minutes, about two thirds of the way** — the
+window's production downtime was the larger cost. What it did establish:
+
+- the pressure was real: `prefix_cache_queries_total` rose 17.9M to 22.6M while
+  `prefix_cache_hits_total` stayed at 13.68M, i.e. **zero cache hits across every
+  pressure prompt** (they share nothing);
+- the original 62,962-token prefix was still fully cached at the pre-pressure
+  check (62,720 of its tokens), so nothing had evicted it before the pressure
+  began.
+
+**Unanswered:** whether the original prefix survives once unrelated prefixes
+exceed the pool. That is the one #902 question this window did not settle; it
+needs a run sized to fit the window (for example 170 × 65K = 11.05M tokens, the
+pool's own size) or a longer window.
 
 ## Why this matters for the agent workload
 
