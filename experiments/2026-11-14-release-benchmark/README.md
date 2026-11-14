@@ -69,7 +69,7 @@ The cross-fleet table is kept only as evidence of why it cannot be used.
 
 ## The site's reference is now recorded
 
-`manifests/suites/2026-11-14-spark-ds41f-1107-site-tp4-switched/` holds the plain
+`reference-1107-site/` holds the plain
 `1107` run this window measured on spark-eb1a (suite, grid, c16, c8, poisson,
 prefill, stalls, conditions; 248 KB, no model corpus, so its model step stays
 "not kept" exactly like the sp1-sp4 record). Future candidates on this site
@@ -78,6 +78,12 @@ same-fleet by construction:
 
 ```
 python3 scripts/servebench_suite_table.py <run> \
-  manifests/suites/2026-11-14-spark-ds41f-1107-site-tp4-switched \
+  results/private/suites/site1107-release/site1107 \
   <candidate> <candidate>-again
 ```
+
+It stays under `experiments/` rather than `manifests/suites/`: the site generator
+treats everything in `manifests/suites/` as a promoted release's evidence and
+rendered this run into `docs/index.html` with an empty date, which the release
+tests then rejected. The run itself is unchanged on the node under
+`results/private/suites/site1107-release{,-single-stream,-sampled}/`.
