@@ -142,3 +142,24 @@ Carry `b1367a59` into the next release; do not claim a speedup.
 In-kernel `prefetch_l2` emission (`ITEM3-prefetch-design.md`), host-mapped
 buffer annotations (`fd530580`), TileKernels v2.1.0, and the big decode levers
 (persistent `FC1 -> SwiGLU -> FC2`, direct producer writes, 128-row vocab head).
+
+## Deployed to the site (2026-11-20)
+
+Owner-directed site deployment, not a repository promotion:
+
+- All four spark-eb1a nodes run `spark-ds41f:1107-tilelang-b1367`; the engine
+  shape is unchanged (`tp4-switched`, 716,800-token requests, TP4, 10.5 GiB KV).
+- Node checkouts are clean and detached at `a5288eb4` (`site/spark-eb1a`, fork).
+- Container `tilelang.__version__` is `0.1.15+snapshot.e808dbdd…`, the kernel
+  cache namespace is present and warm, `GET /v1/models` returns 200, and
+  `doctor --live` reports only the site's pre-existing `nvidia-drm fbdev=N`
+  deviation (no image-label mismatch).
+- Boot: API ready at **+120.1 s** with the namespace already populated.
+- `config/cluster.json`, `upstreams.lock.json` and `manifests/` still name
+  `spark-ds41f-1107`; promotion (config, documentation and a new immutable
+  baseline in one commit) and qualification on the other shapes remain the
+  owner's call.
+
+Rollback: start `experiments/2026-11-12-site-spark-eb1a/profile.json`, which
+names `spark-ds41f:1107` and whose cache namespace is intact — a warm boot of
+about two minutes.
