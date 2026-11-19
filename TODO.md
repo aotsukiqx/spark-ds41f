@@ -443,7 +443,11 @@ Remaining kernel-level investigations:
   branches were measured bit-identical, and the intrinsic branch is the one that
   ran. Replace the guard with an import-time assertion in the first candidate
   that rebuilds TileKernels; the record of the built image is not rewritten
-  retroactively.
+  retroactively. It is hygiene, not serving speed: at `1107` the patched kernel
+  is only the contract test's oracle (`0181` replaced the serving call with
+  `moe_swiglu_cast`), so its serving contribution is 0
+  (`experiments/2026-11-13-upstream-primitives/README.md`, Correction
+  2026-11-17).
 - The one-read `fill_defaults` fix (`0019`) is still needed on PyTorch main.
 - The NCCL IB send-path fence patch should be dropped once upstream releases the
   fix.
