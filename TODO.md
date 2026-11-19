@@ -448,6 +448,15 @@ Remaining kernel-level investigations:
   `moe_swiglu_cast`), so its serving contribution is 0
   (`experiments/2026-11-13-upstream-primitives/README.md`, Correction
   2026-11-17).
+- **The TileLang `b1367a59` refresh is measured and stays candidate-only
+  (2026-11-19).** `experiments/2026-11-19-tilelang-pin-refresh`: the 13-patch
+  series is unchanged (`0014`/`0015` dropped; upstream owns clamp and prefetch),
+  quality 5/5 on two boots, every decode point inside the 1107 reference's
+  combined 95% with no repeatable outside-CI change, cold boot 882 s and warm
+  boot 123 s on a source-bound cache namespace, release tests 9551 passed /
+  311 skipped with 2 pre-existing scheduler-parameter failures that reproduce in
+  the 1107 image. Carry the pin into the next release's compiler move; do not
+  claim a speedup.
 - The one-read `fill_defaults` fix (`0019`) is still needed on PyTorch main.
 - The NCCL IB send-path fence patch should be dropped once upstream releases the
   fix.
