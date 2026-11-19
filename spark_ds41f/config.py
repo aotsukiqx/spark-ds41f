@@ -366,7 +366,21 @@ def transfer_target(nodes: dict, node: dict) -> str:
     return f"{nodes['ssh_user']}@{host}"
 
 
-SSH_CONTROL_DIR = Path(tempfile.gettempdir()) / f"spark-ssh-{os.getuid()}"
+def _ssh_control_dir() -> Path:
+    """Where ssh keeps its multiplexing sockets.
+
+    A ``sockaddr_un`` path is about 104 bytes long, and ``%C`` expands to 40
+    hex characters. macOS's per-user ``TMPDIR`` (``/var/folders/.../T/``) can
+    leave less than that, and ssh then exits with "unix_listener: path too long
+    for Unix domain socket" and no connection at all. Keep the directory short.
+    """
+    candidate = Path(tempfile.gettempdir()) / f"spark-ssh-{os.getuid()}"
+    if len(str(candidate)) > 60:
+        candidate = Path("/tmp") / f"spark-ssh-{os.getuid()}"
+    return candidate
+
+
+SSH_CONTROL_DIR = _ssh_control_dir()
 
 
 def ssh_options() -> list[str]:
