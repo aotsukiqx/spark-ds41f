@@ -120,3 +120,22 @@ one upstream intrinsic; the prefetch intrinsics become available for the
 in-kernel emission experiment), not measurable serving speed — exactly what
 the kernel-level ceiling predicted (~0.15% of a step). Folding it into the
 next TileLang refresh costs nothing measurable.
+
+## Correction (2026-11-17): the clamp target is a test oracle, not a serving kernel
+
+Upstream re-check against the composed `1107` series (`1107/vllm/series`):
+
+- `0181` (series position 173) introduces `moe_swiglu_cast` and **deletes the
+  serving call** to TileKernels' `swiglu_forward_and_per_token_cast`
+  (`_swiglu_call`, `_tile_kernels(...).swiglu(...)`); the routed chain is
+  `moe_dispatch -> FC1 -> moe_swiglu_cast -> FC2 -> moe_combine` (`0756`).
+- `0665` (position 566) only edits tests that compare `moe_swiglu_cast` against
+  `_tile_kernels_swiglu`, the reference form of the same kernel.
+
+So the clamp patch (`patches/tile_kernels/0001`, `spark-ds41f` patch 0001)
+changes a **test-only oracle** at `1107`. The kernel-level 4-5% is real and
+still bit-exact (it shortens test compilation and runtime), but the stated
+serving ceiling of "~0.15% of a decode step" is void: the correct serving
+contribution is **0**, and the two-boot `same` verdict above is the expected
+result rather than evidence that the effect is small. Do not count 0.15% again
+for this patch.
