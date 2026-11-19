@@ -1,8 +1,7 @@
 {
-  "notes": "TileLang pin refresh at the tp4-switched shape: 1107's sources with tilelang moved from 2123e412 to b1367a59 (2026-11-19). The 1107 compiler series (13 patches) is unchanged and applies 13/13 on the new pin; the 0014/0015 clamp and prefetch backports are dropped because upstream owns both. Predicted serving effect is zero (the clamp target is a test oracle at 1107); this candidate is judged as 'compiler identity changed, nothing else moved'. TileKernels stays at v2.0.0.",
+  "notes": "TileLang pin refresh at the spark-eb1a site: the site profile (700 Ki requests, node-local weights at /hub, 4 KiB host kernel, no GLP) with only the image and the compiler lock changed. tilelang moves 2123e412 -> b1367a59 (2026-11-19); the 1107 series of 13 patches is unchanged and applies 13/13 on the new pin, with the snapshot patch re-keyed to the new pre-metadata source snapshot. The clamp and prefetch backports are dropped because upstream owns both. Predicted serving effect is zero (the clamp target is a test oracle at 1107); this candidate is judged as 'compiler identity changed, nothing else moved'. TileKernels stays at v2.0.0.",
   "extends": {
-    "config": "config/cluster.json",
-    "shape": "tp4-switched"
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
   },
   "set": {
     "container": {
