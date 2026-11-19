@@ -1,6 +1,6 @@
 # TileLang pin refresh: `2123e412` → `b1367a59`
 
-Status: **assembled and verified; image build next**. Base commit `65366133`.
+Status: **measured on the site; verdict: accept the compiler refresh, no speed claim**. Base commit `65366133`.
 
 ## The one variable
 
@@ -72,11 +72,70 @@ oracle at `1107` (`0181` replaced the serving call with `moe_swiglu_cast`;
    Rollback is restoring `spark-ds41f:1107` through the site profile and closing
    the hold, keeping every receipt.
 
+## Measured (2026-11-19, owner window on spark-eb1a, tp4-switched)
+
+Image `spark-ds41f:1107-tilelang-b1367` (`sha256:80030ea1…`), built on the head
+in 538 s under the memory guard, lowest `MemAvailable` 109.0 GiB, GPU import
+smoke passed with the wheel at `0.1.15+snapshot.e808dbdd…`.
+
+- **Release tests** (`bundles/release-tests`, 1107's 149-file gate manifest,
+  receipts in `receipts/release-tests/`): 9551 passed, 311 skipped, 2 failed.
+  Both failures are `test_schedule_concurrent_partial_requests[True/False]`,
+  which reproduce **in the promoted 1107 image under the same bundle
+  environment** (2 failed, 655 passed, 191 skipped) and pass with the served
+  model redirect unset in either image (621 passed, 0 failed). Pre-existing
+  deployment behaviour of the vLLM series, deselected in
+  `release-tests.json` with the reason; not caused by the compiler.
+- **Boots**: first boot API ready at +882 s (empty new namespace, every kernel
+  compiled fresh), second boot +123 s (namespace reused). The container's
+  `tilelang.__version__` and the cache namespace both read
+  `0.1.15+snapshot.e808dbdd…`; 1107's `…_35f15411…` namespace is untouched.
+  Boot logs show no `fallback` or `compile failed`; the three `disabled` lines
+  are explicit switches (FlashInfer autotune, EAGLE trailing prefix-cache drop,
+  scale-out endpoints), and no JIT runs after readiness.
+- **Quality**: 5/5 on both boots.
+- **Decode grid** against `manifests/benchmarks/2026-11-07-spark-ds41f-1107-switched.json`
+  (step ms; delta is candidate/reference):
+
+  | point | reference | boot 1 | boot 2 | Δ boot 1 | Δ boot 2 | same direction |
+  | --- | ---: | ---: | ---: | ---: | ---: | --- |
+  | prose-c1 | 27.48 | 27.47 | 27.38 | −0.0% | −0.4% | yes |
+  | prose-c2 | 31.07 | 28.62 | 28.30 | −7.9% | −8.9% | yes |
+  | prose-c4 | 37.76 | 31.03 | 31.66 | −17.8% | −16.2% | yes |
+  | prose-c8 | 38.33 | 36.25 | 41.95 | −5.4% | +9.4% | no |
+  | prose-c16 | 51.42 | 54.47 | 49.77 | +5.9% | −3.2% | no |
+  | code-c1 | 29.78 | 30.12 | 30.18 | +1.2% | +1.3% | yes |
+  | code-c2 | 37.73 | 34.59 | 37.59 | −8.3% | −0.4% | yes |
+  | code-c4 | 39.95 | 37.63 | 37.98 | −5.8% | −4.9% | yes |
+  | code-c8 | 42.18 | 43.03 | 48.57 | +2.0% | +15.1% | yes |
+  | code-c16 | 58.63 | 61.02 | 57.15 | +4.1% | −2.5% | no |
+
+  No point is outside the reference's combined 95% interval on both boots. The
+  only consistent outside-interval reading is `prose-c4` on boot 1 (−17.8%,
+  boot 2's own interval is ±24.7%), so the repeat rule does not pass and no
+  speed claim is made. The mixed signs at c8/c16 are this site's boot-to-boot
+  noise (the recorded reference has ±3-4% intervals; the default boot samples
+  four times).
+- **Record values** (the switched reference carries only quality and decode):
+  prefill 32768/65536/131072 tokens 8604/8518/8282 tok/s; prefix replay hit rate
+  0.99 (warm 0.216 s); admission 4 x 65536 pass, peak KV 9%; sampled acceptance
+  0.87 prose-c1, 0.90 prose-c4, 3.09 code-c1, 2.86 code-c4.
+- **Resources**: `MemAvailable` floor 20.45 GiB (boot 1) and 22.25 GiB (boot 2),
+  no swap growth, no thermal slowdown, GPU max 80 C.
+
+**Verdict:** the compiler identity moved and nothing else did — quality and
+decode hold at 1107 within this site's intervals, the kernel-cache namespace is
+source-bound and reused, and the two release-test failures are pre-existing.
+Carry `b1367a59` into the next release; do not claim a speedup.
+
 ## Status log
 
 - 2026-11-19: upstream re-check (`b1367a59`, +4 commits, all non-material);
   candidate folder, lock, arm and re-keyed `0012` assembled; chain verified
-  13/13 on the new pin. Production still serves `1107`; no window taken yet.
+  13/13 on the new pin.
+- 2026-11-19: owner window (manual hold, production stopped): image built and
+  smoke-tested, release-test gate run, two boots measured, production restored
+  on `spark-ds41f:1107`, hold removed. Receipts under `receipts/`.
 
 ## Out of scope
 
