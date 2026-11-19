@@ -1,0 +1,6 @@
+{
+  "deselect": {
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[True]": "expects three 800-token requests to fit one 1024-token step as 400/400/224; DeepSeek V4.1 aligns prefill chunks to the served checkpoint's block geometry, so this deployment schedules two and the test asserts 2 == 3. Measured equal in the promoted 1107 image under the same bundle environment (2 failed, 655 passed, 191 skipped) and absent with the model plugin's served-checkpoint redirect unset (621 passed, 0 failed): pre-existing deployment behaviour, not the compiler",
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[False]": "same as the True parameter: the served checkpoint's prefill alignment schedules two of three 800-token requests; reproduces in the promoted 1107 image with the bundle's environment and passes without the served-model redirect"
+  }
+}
