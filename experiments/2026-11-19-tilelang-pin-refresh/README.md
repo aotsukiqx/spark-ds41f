@@ -163,3 +163,51 @@ Owner-directed site deployment, not a repository promotion:
 Rollback: start `experiments/2026-11-12-site-spark-eb1a/profile.json`, which
 names `spark-ds41f:1107` and whose cache namespace is intact — a warm boot of
 about two minutes.
+
+## Same-day verification of the deployed candidate (2026-11-20)
+
+The deployed candidate was measured once more on the live service (C3) and the
+previous release was booted for a same-day control. The control bench **aborted**:
+`code-c8: other traffic overlapped 4 attempts` — the API server logged 122
+`POST /v1/` requests in 15 minutes from `192.168.2.10` and `192.168.2.18` while the
+cluster was in its control boot. Two consequences: the same-day control has no
+decode data (`receipts/serving/bench-p1-aborted/` keeps the aborted run), and
+production cannot be benchmarked while external clients use it. The rule that a
+released build is not re-measured also applies, so the recorded `1107` reference is
+the comparison surface.
+
+| point | reference | C1 (boot 1) | C2 (boot 2) | C3 (live) | Δ C1 | Δ C2 | Δ C3 | candidate spread |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| code-c1 | 29.78 | 30.12 | 30.18 | 30.99 | +1.2% | +1.3% | +4.1% | 2.9% |
+| code-c16 | 58.63 | 61.02 | 57.15 | 65.41 | +4.1% | -2.5% | +11.6% | 14.5% |
+| code-c2 | 37.73 | 34.59 | 37.59 | 35.10 | -8.3% | -0.4% | -7.0% | 8.7% |
+| code-c4 | 39.95 | 37.63 | 37.98 | 41.50 | -5.8% | -4.9% | +3.9% | 10.3% |
+| code-c8 | 42.18 | 43.03 | 48.57 | 43.64 | +2.0% | +15.1% | +3.4% | 12.9% |
+| prose-c1 | 27.48 | 27.47 | 27.38 | 27.38 | -0.0% | -0.4% | -0.4% | 0.4% |
+| prose-c16 | 51.42 | 54.47 | 49.77 | 48.95 | +5.9% | -3.2% | -4.8% | 11.3% |
+| prose-c2 | 31.07 | 28.62 | 28.30 | 28.62 | -7.9% | -8.9% | -7.9% | 1.1% |
+| prose-c4 | 37.76 | 31.03 | 31.66 | 30.83 | -17.8% | -16.2% | -18.4% | 2.7% |
+| prose-c8 | 38.33 | 36.25 | 41.95 | 36.21 | -5.4% | +9.4% | -5.5% | 15.9% |
+
+Verdict, on the repo's rule (a point must agree across repeats **and** exceed the
+combined 95% interval):
+
+- **No point passes.** Nothing is outside the reference's own interval on all three
+  candidate samples; the reference's concurrency-point intervals are wide
+  (`prose-c2` ±16.7% = ±5.19 ms, `prose-c4` ±13.4% = ±4.89 ms), and the candidate's
+  own intervals are 1-14%.
+- The only repeatable *direction* is `prose-c2` (−7.9/−8.9/−7.9%) and `prose-c4`
+  (−17.8/−16.2/−18.4%), with candidate spreads of 1.1% and 2.7% — far tighter than
+  the 8-16% spread of the other concurrency points. That makes them plausible
+  step-time wins (+8% and +16% tok/s at those points) that this reference cannot
+  prove; a proof needs a same-day control on a quiesced service.
+- Everything else is noise: `prose-c8`, `prose-c16`, `code-c16` change sign between
+  samples, and `code-c8` ranges over 12.9%.
+- Quality 5/5 on all three samples; acceptance (`accepted/verified`,
+  `tokens/step`) is unchanged, so any step-time gain is not traded for shallower
+  speculation.
+
+Operational finding: the site serves real external traffic, so (a) live benchmarking
+must not run while clients are connected — the tool aborts rather than report mixed
+numbers — and (b) the deployment itself replaces the service for ~2-3 minutes; both
+need the owner's coordination with the clients' users.
