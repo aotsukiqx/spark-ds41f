@@ -1,0 +1,13 @@
+{
+  "notes": "TileLang pin refresh at the tp4-switched shape: 1107's sources with tilelang moved from 2123e412 to b1367a59 (2026-11-19). The 1107 compiler series (13 patches) is unchanged and applies 13/13 on the new pin; the 0014/0015 clamp and prefetch backports are dropped because upstream owns both. Predicted serving effect is zero (the clamp target is a test oracle at 1107); this candidate is judged as 'compiler identity changed, nothing else moved'. TileKernels stays at v2.0.0.",
+  "extends": {
+    "config": "config/cluster.json",
+    "shape": "tp4-switched"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-tilelang-b1367"
+    },
+    "upstreams_config": "experiments/2026-11-19-tilelang-pin-refresh/upstreams.lock.json"
+  }
+}
