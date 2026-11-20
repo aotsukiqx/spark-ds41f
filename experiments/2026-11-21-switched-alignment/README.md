@@ -80,6 +80,34 @@ and env). Verified after a quality+decode gate and two 131K prefills:
 Remaining for B1: the switch block (below). Once it lands, the acceptance run
 is the same gate + 131K/500K prefills with retrans/oos flat and the switch's
 pause counters sane.
+## B1 switch side: applied by the owner, acceptance passed (2026-11-20)
+
+CRS812 at RouterOS 7.25.1: QoS profiles `roce` (dscp 26 -> tc 3) and `cnp`
+(dscp 48 -> tc 6) show **H (hardware-offloaded)**, and the four RUNNING fabric
+ports (`qsfp56-1-1`, `qsfp56-2-1`, `qsfp56-dd-2-1`, `qsfp56-dd-2-5`) carry
+`trust-l3=trust pfc=pfc-roce egress-rate-queue3=0`. Cosmetic residue:
+inactive breakout sub-ports still show `egress-rate-queue3=200bps` from the
+earlier attempt — no link, no traffic; zero them at leisure.
+
+Acceptance load (quality 5/5 + decode gate + 2x131K + 2x524K prefills,
+`results/private/bench/2026-11-21-b1-switch-lossless/`):
+
+| measure | before (best-effort) | after (lossless) |
+| --- | ---: | ---: |
+| `roce_adp_retrans` / `out_of_sequence` over the load | +12 / +343 per ~5 min (head, lighter load) | **+0 / +0 on every node and path** |
+| pause frames (rx, per node) | 0 | 12.6k-17.1k (the switch pausing instead of dropping; no storms) |
+| prefill 131,072 | 7,890-8,050 site band | **8,519.2 ±0.3%** |
+| prefill 524,288 | 6,574-6,662 band | **6,914.2 ±0.8%** |
+| `code-c1` / `prose-c1` step | 30.1-31.0 / 27.6-27.7 ms | 30.15 / 27.93 ms (in band) |
+
+Verdict: **B1 adopted.** The earlier "tail-only" estimate was too conservative:
+the 16,384-budget prefill all-reduces were paying ~5% in retransmission stalls
+at depth, and the lossless class returns it. Thermal note: GPUs peaked 75-81 °C
+(6-8 °C headroom on spark-141e/2fe7), no slowdown time recorded.
+
+Consequence for the plan: with the fabric now absorbing incast without loss,
+re-open **B2 (`NCCL_BUFFSIZE=2 MiB`)** — larger messages were exactly the
+regime the old fabric could not carry cleanly.
 
 ## Plan
 
