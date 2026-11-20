@@ -32,3 +32,37 @@ consistently across boots with c1 unchanged and quality 5/5.
 `[0,1]` aborts engine init with `ValueError: Batch-size range (0, 1) must be
 positive` (complete failed-start logs under `runs/failed-starts/`, ignored by
 `*.log`). The arm now uses `[[1,1,5],[2,4,4],[5,8,3],[9,16,2]]`.
+
+## Result: the config-only route is blocked by a constant in the DSpark port
+
+Second attempt (`05:59Z`, corrected one-based ranges) fails at engine init with
+
+```
+File ".../vllm/v1/worker/gpu/spec_decode/dspark/speculator.py", line 457
+base_logits = base_logits.view(num_reqs, n_spec, vocab_size)
+RuntimeError: shape '[16, 5, 32320]' is invalid for input of size 2068480
+```
+
+`2068480 = 16 * 4 * 32320`: the draft-logits tensor carries the **effective**
+depth (4 for that batch), while the speculator still reshapes with
+`n_spec = self.num_speculative_steps` (line 430), the module maximum 5.
+`num_sample = num_reqs * n_spec` and the `sample_idx_mapping` slice use the same
+constant. The adaptive-window arm would take the same path for any step whose
+adapted depth is below the maximum.
+
+So `num_speculative_tokens_per_batch_size` and
+`adaptive_speculative_tokens_window` are advertised by the upstream engine but
+our DSpark port assumes one fixed depth. Both failed starts are preserved:
+`runs/failed-starts/20261120T055509Z-spark-ds41f` (the (0,1) range) and
+`20261120T060134Z-spark-ds41f` (this reshape).
+
+**What it would take:** thread the per-step effective depth from the schedule /
+adaptive controller into the speculator and use it for `num_sample`, the
+`base_logits` reshape and the `sample_idx_mapping` view (the padded buffers stay
+sized for the maximum). That is a real change in the fork's speculative path,
+not a knob: it needs the release tests, two boots and acceptance measurement, and
+is only worth doing if accepted-length data says a smaller depth pays at high
+concurrency.
+
+Until then the recipe keeps five drafts at every batch size. `arm-adapt8` is not
+run: it shares the failing reshape.
