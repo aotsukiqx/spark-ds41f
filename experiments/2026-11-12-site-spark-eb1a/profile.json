@@ -21,7 +21,19 @@
     },
     "deployment": {
       "path": "{home}/nvmodels/spark-ds41f"
-    }
+    },
+    "container": {
+      "image": "spark-ds41f:1107-nccl-2.32.6",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+        "local.spark-ds41f.b12x.tree": "04e0ee957d6992e5c7c0896acd75b6a02b20b924",
+        "local.spark-ds41f.nccl.tree": "fd7f2d688e37b7401c38c08016a10041b46bd206",
+        "local.spark-ds41f.tilelang.tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-20-nccl-2.32/upstreams.lock.json"
   },
   "serve_options": {
     "--max-model-len": "716800"
@@ -29,5 +41,5 @@
   "unset": [
     "glp"
   ],
-  "notes": "spark-eb1a site deployment of spark-ds41f-1107: four nodes through the 200 GbE switch, stock 4 KiB kernel, no memory saver, 716,800-token requests (700 Ki), 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool (the startup line's 16.02 full contexts at 716,800). The stock served name only: the recipe's GLP steering file is not in the nodes' hub caches and HF_HUB_OFFLINE=1 forbids fetching it."
+  "notes": "spark-eb1a site deployment. Since 2026-11-21 it names the deployed stack: spark-ds41f:1107-nccl-2.32.6 (TileLang b1367a59, vLLM 6d66eed3 with CuTe DSL/CUTLASS 4.8.1, NCCL 2.32.6-1, TileKernels 2.0.0, sparknet 1fd6a1fb) at the unchanged shape: four nodes through the 200 GbE switch, stock 4 KiB kernel, no memory saver, 716,800-token requests, 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool. This is a site deployment, not a repository promotion: config/cluster.json, upstreams.lock.json and manifests/ still name spark-ds41f-1107. The GLP-steered name stays unset (HF_HUB_OFFLINE)."
 }

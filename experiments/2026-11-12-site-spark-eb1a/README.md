@@ -313,3 +313,14 @@ lane rejection as measured facts, and lists what is left with its price.
     summaries.
   - `lanes2-stall/`: the two-lane livelock — counters, container log, process table, GPU
     state, memory.
+
+## 2026-11-21: the site now names the deployed stack
+
+Production moved from `spark-ds41f:1107` through three measured candidates
+(TileLang `b1367a59`, then vLLM `6d66eed3` with CuTe DSL/CUTLASS 4.8.1, then
+NCCL 2.32.6-1), each gated with the 150-file release-test split and two site
+boots, with no proven serving change. `profile.json` now carries the image, lock
+and expected labels of that stack, so restarting from the profile reproduces
+production instead of `1107`; it remains a site deployment, not a repository
+promotion. The single current-state record lives in
+`experiments/2026-11-21-site-state/`.
