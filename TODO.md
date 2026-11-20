@@ -276,6 +276,15 @@ Open levers:
   incremental per-slot rolling-hash index of 16-token suffix positions updated
   only for newly committed tokens, or bound the scan to a recency + prefix
   window so `copy_match` is $O(1)$ in context length.
+- **Bounded CopyDrafter history scan (2026-11-21): deferred at this site.**
+  The 1107 numbers (0.36-0.47 ms/step at c16 with 1M histories, up to ~2 ms on
+  repeated boilerplate) do not transfer: this site caps requests at 716,800
+  tokens, where the scan scales to ~0.26-0.34 ms/step, i.e. <=0.3% of a 102 ms
+  c16 step and below every interval this site resolves. A faithful c16 1M trace
+  is also impossible here (16 x 716K tokens is the whole 11.5M pool, ~25 min of
+  cold prefill). Reopens only on a live agent-trace record showing far-history
+  scans at high frequency, or a longer request limit; see
+  `experiments/2026-11-21-copy-scan-window/`.
 - **Draft depth by load or recent acceptance.** Five DSpark drafts pay off on
   high-acceptance code at one stream (`+14–18%`), whereas live agent traffic and
   8–16 stream prose accept fewer tokens per step. Screen load-aware
