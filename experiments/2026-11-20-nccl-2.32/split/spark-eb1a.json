@@ -1,0 +1,136 @@
+{
+  "deselect": {
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStartIncludesTypeAndRole::test_message_start_contains_message_type_and_role": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStreamConverterToolUseContentBuffering::test_buffered_content_flushed_on_done_without_usage_chunk": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStreamConverterToolUseContentBuffering::test_tool_use_args_not_dropped_when_content_in_same_chunk": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStopSequenceReason::test_streaming_no_stop_string_emits_explicit_null_stop_sequence": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStopSequenceReason::test_streaming_stop_string_maps_to_stop_sequence": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_cache_fields_absent_then_populated": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_no_cache_hit": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_no_prompt_tokens_details_at_all": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[False]": "same as the True parameter: the served checkpoint's prefill alignment schedules two of three 800-token requests; reproduces in the promoted 1107 image with the bundle's environment and passes without the served-model redirect",
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[True]": "expects three 800-token requests to fit one 1024-token step as 400/400/224; DeepSeek V4.1 aligns prefill chunks to the served checkpoint's block geometry, so this deployment schedules two and the test asserts 2 == 3. Measured equal in the promoted 1107 image under the same bundle environment (2 failed, 655 passed, 191 skipped) and absent with the model plugin's served-checkpoint redirect unset (621 passed, 0 failed): pre-existing deployment behaviour, not the compiler",
+    "tests/v1/executor/test_b12x_terminal.py::test_arrow_and_alt_sequences_do_not_cancel": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_escape_between_stages_stays_cancelled": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_escape_without_enter_cancels_once_and_restores_terminal": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_exception_restores_terminal": "escape-to-cancel autotune: production disables autotune and runs without a terminal"
+  },
+  "files": {
+    "tests/config/test_multimodal_config.py": [
+      "ModelConfig init without eager model, tokenizer and quantization imports (changed by the series)"
+    ],
+    "tests/entrypoints/openai/test_reasoning_enable_thinking.py": [
+      "reasoning_effort and the DeepSeek API's top-level thinking switch mapped into the chat template"
+    ],
+    "tests/jit_monitor/test_hooks_gpu.py": [
+      "the JIT monitor detecting a real Triton recompile"
+    ],
+    "tests/kernels/moe/test_deepseek_v41_tilelang_router.py": [
+      "TileKernels router and fused gate-router against DeepSeek's gate; padding and CED masks"
+    ],
+    "tests/kernels/quantization/test_deepseek_v41_expert_scale_codes.py": [
+      "2-bit expert scale codes: the pack round trip, the tiled code rows, and the grouped MoE GEMM over mixed 2-bit and 4-bit experts bit for bit against the uncoded GEMM (changed by the series)"
+    ],
+    "tests/kernels/test_deepseek_v41_copy_logits.py": [
+      "TileLang sampler cast and strided-copy kernels including aligned vectorization and pitched 2D DMA"
+    ],
+    "tests/kernels/test_deepseek_v41_rank_order_strided.py": [
+      "TileLang 8-D strided rank-order reduction replacing ATen sum fallbacks"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_collectives.py": [
+      "rank-order reduce-scatter and all-reduce (bits, graph replay)"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_dspark_context.py": [
+      "DSpark's context-graph inputs in one launch; the norm writes the context buffer"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_front.py": [
+      "the attention front in one launch: every output byte against the five kernels it replaces at 1-65 rows (changed by the series)"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_mhc.py": [
+      "TileLang mHC pre, post and collapse against FP32; rank-order parts; NaN"
+    ],
+    "tests/model_executor/model_loader/test_direct_loader.py": [
+      "the direct loader (--load-format direct) without a GPU: its descriptors executed on host memory equal Torch's copies (TP shards, strided and padded destinations, BF16 expansion, scratch conversions), header checks, Engram file-source descriptors, the host-page-table refusal, the helper's build"
+    ],
+    "tests/model_executor/test_b12x_op_boundary.py": [
+      "custom-op argument types, TileLang modules included"
+    ],
+    "tests/models/test_deepseek_v41_sp_project_reduce_scatter.py": [
+      "sequence-parallel prefill projection and reduce-scatter"
+    ],
+    "tests/models/test_deepseek_v4_1_compressor.py": [
+      "compressor state-cache ownership and ring slot mapping"
+    ],
+    "tests/models/test_deepseek_v4_1_glp.py": [
+      "GLP steering: the fail-closed reader, the projection, and no steering module when unset"
+    ],
+    "tests/models/test_deepseek_v4_1_prepare.py": [
+      "TileLang kernel declaration, collection and binding"
+    ],
+    "tests/parser/engine/test_deepseek_v4.py": [
+      "the DSML parser engine the deepseek_v41 parser is built on"
+    ],
+    "tests/test_config.py": [
+      "vLLM's configuration validation, DSpark adaptive verification's among it (full CUDA graphs, the speculative config)"
+    ],
+    "tests/tokenizers_/test_deepseek_v41.py": [
+      "DS4.1 chat encoding against reference fixtures"
+    ],
+    "tests/utils_/test_jit_monitor_dynamo.py": [
+      "the JIT monitor's torch.compile hook"
+    ],
+    "tests/v1/core/test_copy_drafts_scheduler.py": [
+      "copy drafts in the scheduler: placeholders widened within the row envelope, context-aware chunking, and prefill-decode interleave (changed by the series)"
+    ],
+    "tests/v1/core/test_prefix_group_validity.py": [
+      "upstream prefix-caching group-validity oracle changed by the 6d66eed3 base; the deployment serves prefix caching, so the new file is gated rather than excluded"
+    ],
+    "tests/v1/core/test_sink_draft_zero.py": [
+      "sink rejection in the scheduler: the held token as draft zero (sync and async), its accounting, stops, logprobs, grammar, preemption; the model-keyed default"
+    ],
+    "tests/v1/engine/test_request_submission_cleanup.py": [
+      "CPU request registration rollback: cancellation, failed sends, partial sampling children, external-ID isolation and successful completion"
+    ],
+    "tests/v1/spec_decode/test_acceptance_estimator.py": [
+      "speculative acceptance estimator and online IRLS confidence calibration (changed by the series)"
+    ],
+    "tests/v1/spec_decode/test_dflash_prepare_inputs.py": [
+      "the DFlash input preparation kernel DSpark's propose launches"
+    ],
+    "tests/v1/spec_decode/test_tilelang_rejection.py": [
+      "block verification in TileLang against Triton"
+    ],
+    "tests/v1/worker/test_dead_rows.py": [
+      "dead-row marking and commit clamp in adaptive verification"
+    ],
+    "tests/v1/worker/test_dspark_utils.py": [
+      "DSpark parallel config and loader choice"
+    ],
+    "tests/v1/worker/test_gpu_logit_bias.py": [
+      "logit bias in TileLang, restore of allowed ids"
+    ],
+    "tests/v1/worker/test_gpu_pcp_manager.py": [
+      "the v2 runner's dummy-run context and block assignment (changed by the series)"
+    ],
+    "tests/v1/worker/test_gpu_sampling_states_gather.py": [
+      "top-k and top-p parameters through the row gather"
+    ],
+    "tests/v1/worker/test_gpu_tilelang_logprob_softmax.py": [
+      "token log-softmax in TileLang (masked and unmasked)"
+    ],
+    "tests/v1/worker/test_gpu_tilelang_topk_topp.py": [
+      "top-k and top-p filtering in TileLang against Triton"
+    ],
+    "tests/v1/worker/test_gpu_warmup_blocks.py": [
+      "warmup_kernels without redundant post-capture non-graph work (changed by the series)"
+    ],
+    "tests/v1/worker/test_late_admission.py": [
+      "late admission in the worker: the layer event in eager and captured-graph steps, the execute_model reply"
+    ],
+    "tests/v1/worker/test_startup_rendezvous.py": [
+      "the startup rendezvous: liveness heartbeats, a stopped rank named"
+    ]
+  },
+  "head": "ab513d36db47820bad9eaaa3160b0e44e4ac82e1",
+  "repo": ".work/build/vllm-6d66eed35b0a-b12x-236ddff04a5f-38a6ea47/src/vllm"
+}
