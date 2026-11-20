@@ -1,0 +1,7 @@
+chunk 000: exit 0, 159 s
+chunk 001: exit 0, 91 s
+chunk 002: exit 0, 169 s
+chunk 003: exit 0, 386 s
+
+37 files, 757 s of tests; 0 files not ok: 
+3003 passed, 2 skipped
