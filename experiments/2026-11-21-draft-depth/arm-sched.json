@@ -1,0 +1,9 @@
+{
+  "notes": "Draft depth 'sched' on the deployed stack: the recipe's serving args with only --speculative-config changed. Load-aware depth keeps five drafts at one stream and drops to four/three/two across batch sizes 2-4/5-8/9-16; adaptive depth averages the accepted length over eight verify steps with five as the upper bound. Everything else, including adaptive verification, is unchanged.",
+  "extends": {
+    "config": "experiments/2026-11-20-nccl-2.32/arm-tp4-switched.json"
+  },
+  "serve_options": {
+    "--speculative-config": "{\"method\":\"dspark\",\"num_speculative_tokens\":5,\"draft_tensor_parallel_size\":4,\"attention_backend\":\"TILELANG\",\"draft_sample_method\":\"greedy\",\"rejection_sample_method\":\"block\",\"enable_adaptive_verification\":true,\"adaptive_verification_row_cost\":0.035,\"num_speculative_tokens_per_batch_size\":[[0,1,5],[2,4,4],[5,8,3],[9,16,2]]}"
+  }
+}
