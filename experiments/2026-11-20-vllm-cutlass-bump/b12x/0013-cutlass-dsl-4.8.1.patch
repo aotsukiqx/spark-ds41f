@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Thu, 20 Nov 2026 00:00:00 +0100
+Subject: [PATCH] build: move to CUTLASS DSL 4.8.1
+
+The serving source's vLLM moves to 4.8.1 together with the CUTLASS 4.8.1
+headers, and every consumer accepts it (quack-kernels >= 4.7, flashinfer
+>= 4.6.2a0, nccl4py ~= 4.6, cudnn-frontend >= 4.6.2). B12X moves with them
+rather than holding the wheel set at 4.7.1.
+---
+ pyproject.toml | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 781de5f4..f0a2c9d1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -10,11 +10,11 @@ license-files = ["LICENSE"]
+ dependencies = [
+   "torch>=2.12.0",
+   "cuda-python",
+-  "nvidia-cutlass-dsl==4.7.1",
+-  "nvidia-cutlass-dsl-libs-base==4.7.1",
+-  "nvidia-cutlass-dsl-libs-core==4.7.1",
+-  "nvidia-cutlass-dsl-libs-cu12==4.7.1",
+-  "nvidia-cutlass-dsl-libs-cu13==4.7.1",
++  "nvidia-cutlass-dsl==4.8.1",
++  "nvidia-cutlass-dsl-libs-base==4.8.1",
++  "nvidia-cutlass-dsl-libs-core==4.8.1",
++  "nvidia-cutlass-dsl-libs-cu12==4.8.1",
++  "nvidia-cutlass-dsl-libs-cu13==4.8.1",
+   "apache-tvm-ffi>=0.1.6,!=0.1.8,!=0.1.8.post0,<0.2",
+   "rich>=13",
+   "transformers>=4.51",
+-- 
+2.54.0 (Apple Git-157)

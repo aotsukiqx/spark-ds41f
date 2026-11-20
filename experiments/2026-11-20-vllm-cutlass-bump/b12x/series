@@ -1,0 +1,14 @@
+# Applied after the pinned local-inference-lab/b12x revision; 0002 (CuTe DSL
+# 4.7.1) is upstream at 236ddff0 and 0013 moves the wheel set to 4.8.1.
+../../2026-10-08-lil-rebase/b12x/0001-switchless-rocenante.patch
+../../2026-10-08-lil-rebase/b12x/0003-dsa-topk-position-ties.patch
+../../2026-10-08-lil-rebase/b12x/0004-gemm-fence-stage-reads-before-tma-refill.patch
+../../2026-10-08-lil-rebase/b12x/0005-fence-stage-reads-three-kernels.patch
+../../2026-10-08-lil-rebase/b12x/0006-rocenante-ring4.patch
+../../2026-10-08-lil-rebase/b12x/0007-rocenante-mesh4.patch
+../../2026-10-08-lil-rebase/b12x/0008-four-path-mesh.patch
+../../2026-10-08-lil-rebase/b12x/0009-bidirectional-relay.patch
+../../2026-10-08-lil-rebase/b12x/0010-dispatch-capacity.patch
+../../2026-10-08-lil-rebase/b12x/0011-loader-abi.patch
+../../2026-10-08-lil-rebase/b12x/0012-packed-bf16-vocab-projection.patch
+0013-cutlass-dsl-4.8.1.patch
