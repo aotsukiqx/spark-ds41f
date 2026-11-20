@@ -1,0 +1,8 @@
+# Applied after the pinned NVIDIA/nccl tag v2.32.6-1.
+# 0001 (IB CTS nreqs ordering) is upstream in 2.32 (0bb8dec4), so it is dropped.
+# 0003 (balanced channel allocation) and 0004 (small-ring threads) targeted the
+# 2.30 tuning loop in src/enqueue.cc, which 2.32 rewrote into src/tuning/ and
+# src/enqueue/enqueue.cc; they are dropped here and must be re-expressed before
+# this pin is promoted for the switchless shapes (this site runs the switched
+# fabric, where NCCL_SWITCHLESS_BIDIRECTIONAL is not set).
+0002-bidirectional-switchless-rings.patch

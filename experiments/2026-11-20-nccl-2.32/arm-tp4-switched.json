@@ -1,0 +1,20 @@
+{
+  "notes": "NCCL 2.32.6-1 candidate at the spark-eb1a site: the site profile with the serving stack of the vLLM/CUTLASS group (vLLM 6d66eed3, CuTe DSL 4.8.1, CUTLASS 4.8.1, TileLang b1367a59) unchanged and NCCL moved from v2.30.7-1 to v2.32.6-1. Only the ported bidirectional switchless ring policy is carried: the CTS fence is upstream, and the balanced-channel and small-ring-thread patches target tuning code 2.32 rewrote (switchless shapes only; this site is switched).",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-nccl-2.32.6",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+        "local.spark-ds41f.b12x.tree": "04e0ee957d6992e5c7c0896acd75b6a02b20b924",
+        "local.spark-ds41f.nccl.tree": "fd7f2d688e37b7401c38c08016a10041b46bd206",
+        "local.spark-ds41f.tilelang.tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-20-nccl-2.32/upstreams.lock.json"
+  }
+}
