@@ -1394,6 +1394,7 @@ def command_build_image(args: argparse.Namespace) -> int:
             "DEPLOYMENT_COMMIT": deployment_commit,
             "VLLM_COMPILE_JOBS": str(jobs),
             "VLLM_NVCC_THREADS": str(BUILD_NVCC_THREADS),
+            "CUTLASS_DSL_VERSION": upstreams["sources"]["cutlass_dsl"]["version"],
         }
         if max_jobs is not None:
             nccl_jobs = min(BUILD_NCCL_JOBS, max_jobs)

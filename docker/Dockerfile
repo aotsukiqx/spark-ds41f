@@ -309,13 +309,20 @@ PY
 ENV PYTHONPATH=/opt/spark-ds41f/candidate/vllm
 ENV VLLM_NATIVE_CACHE_DIR=/opt/spark-ds41f/native
 
-RUN LIBRARY_PATH=/usr/local/cuda/lib64/stubs python3 - <<'PY'
+ARG CUTLASS_DSL_VERSION=unrecorded
+
+RUN CUTLASS_DSL_VERSION=${CUTLASS_DSL_VERSION} LIBRARY_PATH=/usr/local/cuda/lib64/stubs python3 - <<'PY'
 import ctypes
 import hashlib
 import importlib.metadata as metadata
+import os
 import subprocess
 
-assert metadata.version("nvidia-cutlass-dsl") == "4.7.1"
+installed_dsl = metadata.version("nvidia-cutlass-dsl")
+assert installed_dsl == os.environ["CUTLASS_DSL_VERSION"], (
+    f"cutlass-dsl {installed_dsl} does not match the lock's "
+    f"{os.environ['CUTLASS_DSL_VERSION']}"
+)
 import cutlass.base_dsl.enums  # noqa: F401  (quack-kernels, the DS4.1 L2 prefetch)
 import quack.compile_utils  # noqa: F401
 from vllm.model_executor.model_loader.direct_io import _native as direct_native
