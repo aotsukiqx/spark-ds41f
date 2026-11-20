@@ -1,0 +1,16 @@
+# CPython 3.12 / manylinux_2_28_aarch64 wheels, SHA-256 from PyPI. 4.8.1 is the
+# CUTLASS 4.8.1 pair used by the vllm-6d66eed3 candidate; the vLLM requirements
+# patch lifts its exact ==4.7.1 to ==4.8.1 and every other consumer accepts it
+# (quack-kernels >= 4.7, flashinfer >= 4.6.2a0, nccl4py ~= 4.6, cudnn-frontend
+# >= 4.6.2). bin/spark build prepare downloads and verifies them. Hashes are
+# mandatory.
+nvidia-cutlass-dsl==4.8.1 \
+    --hash=sha256:43ed46b21d151aa643c6765457c7310827b938c1cf45d5109a0152de4ef06227
+nvidia-cutlass-dsl-libs-base==4.8.1 \
+    --hash=sha256:c6312f8b2f1aadd959a0276daf3c4bacc05c783c6ea1119859ed4ebd3c07e3b1
+nvidia-cutlass-dsl-libs-core==4.8.1 \
+    --hash=sha256:bacc6760e3286db447d45720d32ae58ac2e6cecade1152345ef784b2d5e44431
+nvidia-cutlass-dsl-libs-cu12==4.8.1 \
+    --hash=sha256:c89d9ff9574e94561e17be23c0c06d67fc1edb6a4bc3eb067f38a1dc1f682b6e
+nvidia-cutlass-dsl-libs-cu13==4.8.1 \
+    --hash=sha256:862378c0c51a3af2e053b363656501b06f9a54f777eee5be8c0046d780b66956

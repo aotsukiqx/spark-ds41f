@@ -136,8 +136,11 @@ def tree_digest(root: Path) -> str:
     return digest.hexdigest()
 
 
-def expected_wheel_hashes() -> dict[str, str]:
-    lock = ROOT / "requirements/cutlass-dsl-aarch64.txt"
+CUTLASS_DSL_LOCKFILE = "requirements/cutlass-dsl-aarch64.txt"
+
+
+def expected_wheel_hashes(lockfile: str = CUTLASS_DSL_LOCKFILE) -> dict[str, str]:
+    lock = ROOT / lockfile
     expected: dict[str, str] = {}
     package = ""
     for raw_line in lock.read_text(encoding="utf-8").splitlines():
@@ -953,11 +956,11 @@ def prepare_cutlass(directory: Path, record: dict) -> None:
     print(f"cutlass: prepared {record['release_tag']} ({record['revision'][:12]})")
 
 
-def wheel_problems(wheel_dir: Path) -> list[str]:
+def wheel_problems(wheel_dir: Path, lockfile: str = CUTLASS_DSL_LOCKFILE) -> list[str]:
     if not wheel_dir.is_dir():
         return ["cutlass-dsl-wheels: missing"]
     problems = []
-    expected = expected_wheel_hashes()
+    expected = expected_wheel_hashes(lockfile)
     found: set[str] = set()
     for wheel in sorted(wheel_dir.iterdir()):
         normalized = wheel.name.replace("-", "_").lower()
@@ -979,7 +982,8 @@ def wheel_problems(wheel_dir: Path) -> list[str]:
 
 def prepare_wheels(directory: Path, upstreams: dict) -> None:
     destination = directory / "context/cutlass-dsl-wheels"
-    if not wheel_problems(destination):
+    lockfile = upstreams["sources"]["cutlass_dsl"]["lockfile"]
+    if not wheel_problems(destination, lockfile):
         print("cutlass-dsl wheels: reusing verified wheels")
         return
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -992,7 +996,7 @@ def prepare_wheels(directory: Path, upstreams: dict) -> None:
             "--python-version", "3.12", "--abi", "cp312",
             "--requirement", str(ROOT / upstreams["sources"]["cutlass_dsl"]["lockfile"]),
         ])
-        problems = wheel_problems(temporary)
+        problems = wheel_problems(temporary, lockfile)
         if problems:
             raise SystemExit("; ".join(problems))
         replace_directory(temporary, destination)
@@ -1116,7 +1120,7 @@ def vllm_deletions(directory: Path, inputs: dict) -> list[str]:
     return [path.removeprefix("vllm/") for path in output.splitlines()]
 
 
-def build_problems(directory: Path, inputs: dict) -> list[str]:
+def build_problems(directory: Path, inputs: dict, cutlass_dsl_lockfile: str = CUTLASS_DSL_LOCKFILE) -> list[str]:
     record_path = directory / "inputs.json"
     if not record_path.is_file():
         return [f"{directory.relative_to(ROOT)} is not prepared; run bin/spark build prepare"]
@@ -1136,7 +1140,7 @@ def build_problems(directory: Path, inputs: dict) -> list[str]:
             problems.append(f"{name}: context changed since it was prepared")
     if sorted(record.get("contexts", {})) != sorted(build_contexts(inputs)):
         problems.append("inputs.json does not record every build context")
-    problems.extend(wheel_problems(directory / "context/cutlass-dsl-wheels"))
+    problems.extend(wheel_problems(directory / "context/cutlass-dsl-wheels", cutlass_dsl_lockfile))
     if "cuda_toolkit" in inputs:
         problems.extend(cuda_deb_problems(directory / "context" / CUDA_TOOLKIT_CONTEXT, inputs))
     if not (directory / "context/cutlass-source/include/cutlass/cutlass.h").is_file():
@@ -1169,7 +1173,7 @@ def command_build_prepare(args: argparse.Namespace) -> int:
     directory = build_directory(inputs)
     toolkit_part = ("cuda_toolkit",) if "cuda_toolkit" in inputs else ()
     parts = parts or [*BUILD_PARTS, *build_projects(inputs), *toolkit_part]
-    if not args.only and not build_problems(directory, inputs):
+    if not args.only and not build_problems(directory, inputs, upstreams["sources"]["cutlass_dsl"]["lockfile"]):
         print(f"build inputs ready: {directory.relative_to(ROOT)}")
         return 0
     directory.mkdir(parents=True, exist_ok=True)
@@ -1205,7 +1209,7 @@ def command_build_prepare(args: argparse.Namespace) -> int:
     temporary = directory / ".inputs.json"
     temporary.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     temporary.rename(directory / "inputs.json")
-    problems = build_problems(directory, inputs)
+    problems = build_problems(directory, inputs, upstreams["sources"]["cutlass_dsl"]["lockfile"])
     if problems:
         for problem in problems:
             print(f"WARN: {problem}")
@@ -1219,7 +1223,7 @@ def command_build_check(args: argparse.Namespace) -> int:
     inputs = build_inputs(upstreams)
     directory = build_directory(inputs)
     problems = arm_source_problems(cluster, upstreams, read_json(upstreams["source_manifest"]))
-    problems.extend(build_problems(directory, inputs))
+    problems.extend(build_problems(directory, inputs, upstreams["sources"]["cutlass_dsl"]["lockfile"]))
     if problems:
         for problem in problems:
             print(f"WARN: {problem}")
@@ -1363,7 +1367,7 @@ def command_build_image(args: argparse.Namespace) -> int:
     inputs = build_inputs(upstreams)
     directory = build_directory(inputs)
     problems = arm_source_problems(cluster, upstreams, read_json(upstreams["source_manifest"]))
-    problems.extend(build_problems(directory, inputs))
+    problems.extend(build_problems(directory, inputs, upstreams["sources"]["cutlass_dsl"]["lockfile"]))
     if problems:
         for problem in problems:
             print(f"WARN: {problem}")
