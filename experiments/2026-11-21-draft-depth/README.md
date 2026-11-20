@@ -25,3 +25,10 @@ the deployed arm's two boots are the control. Deciders are **tokens/s and
 accepted/verified per point**, not step ms: a depth change is only good if the
 shorter step pays for the drafts it drops. Adopt only if c8/c16 tokens/s improves
 consistently across boots with c1 unchanged and quality 5/5.
+
+## First attempt (05:55Z): rejected by validation
+
+`num_speculative_tokens_per_batch_size` ranges are **one-based and inclusive**;
+`[0,1]` aborts engine init with `ValueError: Batch-size range (0, 1) must be
+positive` (complete failed-start logs under `runs/failed-starts/`, ignored by
+`*.log`). The arm now uses `[[1,1,5],[2,4,4],[5,8,3],[9,16,2]]`.
