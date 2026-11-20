@@ -1,0 +1,20 @@
+{
+  "notes": "vLLM 6d66eed3 + CuTe DSL / CUTLASS 4.8.1 candidate at the spark-eb1a site: the site profile (700 Ki requests, node-local weights at /hub, 4 KiB host kernel, no GLP) with the serving source moved to vLLM 6d66eed3 (641-patch series rebased: 0645 dropped as an upstream duplicate, 0227 re-based, 0646 lifts the cu13 cutlass-dsl requirement to 4.8.1), the CuTe DSL wheel set at 4.8.1 and CUTLASS headers at v4.8.1. TileLang stays at b1367a59. Every other pin is unchanged.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-vllm-6d66-cutlass-4.8.1",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+        "local.spark-ds41f.b12x.tree": "1a647a311ca55d45070ab83d60668d9c8fb8886c",
+        "local.spark-ds41f.nccl.tree": "6af10aa730a64fcee8781d62340a9c9184e79469",
+        "local.spark-ds41f.tilelang.tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-20-vllm-cutlass-bump/upstreams.lock.json"
+  }
+}

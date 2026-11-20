@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Thu, 20 Nov 2026 00:00:00 +0100
+Subject: [PATCH] cu13 requirements: nvidia-cutlass-dsl 4.8.1
+
+The pinned wheel set moves to 4.8.1 for the CUTLASS 4.8.1 headers; every other
+consumer already accepts it (quack-kernels >= 4.7, flashinfer >= 4.6.2a0,
+nccl4py ~= 4.6, cudnn-frontend >= 4.6.2).
+---
+diff --git a/requirements/cuda.txt b/requirements/cuda.txt
+index 4b95ad7..b718d3d 100644
+--- a/requirements/cuda.txt
++++ b/requirements/cuda.txt
+@@ -28,7 +28,7 @@ fastsafetensors >= 0.3.3
+ instanttensor >= 0.1.9
+ 
+ # QuACK and Cutlass DSL for FA4 (cute-DSL implementation)
+-nvidia-cutlass-dsl[cu13]==4.7.1
++nvidia-cutlass-dsl[cu13]==4.8.1
+ quack-kernels==0.6.5  # Required by MSA
+ 
+ # Tokenspeed_MLA for faster mla with spec decode
+-- 
+2.54.0 (Apple Git-157)

@@ -1,0 +1,136 @@
+{
+  "deselect": {
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStartIncludesTypeAndRole::test_message_start_contains_message_type_and_role": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStreamConverterToolUseContentBuffering::test_buffered_content_flushed_on_done_without_usage_chunk": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestMessageStreamConverterToolUseContentBuffering::test_tool_use_args_not_dropped_when_content_in_same_chunk": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStopSequenceReason::test_streaming_no_stop_string_emits_explicit_null_stop_sequence": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStopSequenceReason::test_streaming_stop_string_maps_to_stop_sequence": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_cache_fields_absent_then_populated": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_no_cache_hit": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py::TestStreamingCacheUsageSemantics::test_streaming_no_prompt_tokens_details_at_all": "async def test: the serving image has no pytest-asyncio or anyio plugin, so pytest fails it unrun",
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[False]": "same as the True parameter: the served checkpoint's prefill alignment schedules two of three 800-token requests; reproduces in the promoted 1107 image with the bundle's environment and passes without the served-model redirect",
+    "tests/v1/core/test_scheduler.py::test_schedule_concurrent_partial_requests[True]": "expects three 800-token requests to fit one 1024-token step as 400/400/224; DeepSeek V4.1 aligns prefill chunks to the served checkpoint's block geometry, so this deployment schedules two and the test asserts 2 == 3. Measured equal in the promoted 1107 image under the same bundle environment (2 failed, 655 passed, 191 skipped) and absent with the model plugin's served-checkpoint redirect unset (621 passed, 0 failed): pre-existing deployment behaviour, not the compiler",
+    "tests/v1/executor/test_b12x_terminal.py::test_arrow_and_alt_sequences_do_not_cancel": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_escape_between_stages_stays_cancelled": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_escape_without_enter_cancels_once_and_restores_terminal": "escape-to-cancel autotune: production disables autotune and runs without a terminal",
+    "tests/v1/executor/test_b12x_terminal.py::test_exception_restores_terminal": "escape-to-cancel autotune: production disables autotune and runs without a terminal"
+  },
+  "files": {
+    "tests/distributed/test_roce_policy_no_fallback.py": [
+      "RoCE policy: no process-group fallback, a lost communicator stops, failures are reported"
+    ],
+    "tests/entrypoints/serve/test_sagemaker_root_logging.py": [
+      "the API server's imports (the SageMaker routes' model_hosting_container_standards) leave the root logging as it was, so third-party warnings reach the root handlers (changed by the series)"
+    ],
+    "tests/kernels/attention/test_deepseek_v41_ced_replay.py": [
+      "CED replays the prompt's last 128 rows wherever its chunks end: a decoder stack on the TileLang kernels under several chunkings, bit for bit against one chunk"
+    ],
+    "tests/kernels/moe/test_flashinfer_moe.py": [
+      "the modular kernel's prepared NVFP4 workspace: no output buffer in a lease prepared for the caller's output, the output outside the arena under graph replay; FlashInfer's CUTLASS FP4 MoE (changed by the series)"
+    ],
+    "tests/kernels/quantization/test_deepseek_v41_tilelang_linear.py": [
+      "TileLang MXFP8/BF16 GEMMs, split-K, split/scaled linear, block-32 rows, NaN"
+    ],
+    "tests/kernels/test_deepseek_v41_engram_host_placement.py": [
+      "disk Engram host buffer allocation and page placement"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_activation.py": [
+      "TileLang clamped SwiGLU against the reference expert"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_columns.py": [
+      "column copies, splits, joins and the 16-byte zero fill (SP attention front, CED, pad rows)"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_embedding.py": [
+      "DSpark and Markov embeddings in TileLang, bit for bit"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_glp.py": [
+      "GLP steering's TileLang projection against FP64 and the FP32 torch projection (rounding, batch independence, non-finite rows, declaration)"
+    ],
+    "tests/kernels/test_deepseek_v41_tilelang_pdl.py": [
+      "PDL along the decode chain: programmatic edges live in CUDA graphs, no read before the wait, one layer's chain bit-equal over poisoned replays"
+    ],
+    "tests/model_executor/model_loader/test_direct_loader_cuda.py": [
+      "the direct loader's O_DIRECT bounce ring on the GPU (B12X's test_direct.py): exact bytes at large offsets, untouched padding, failures without a buffered retry, a routed module's digest equal to a Torch copy's; DIRECT_IO_TEST_DIR on /c"
+    ],
+    "tests/model_executor/test_b12x_warmup.py": [
+      "the B12X preparation driver: under TileLang no unit is declared and no temporary KV cache is built"
+    ],
+    "tests/models/test_deepseek_v4_1_attention.py": [
+      "the TileLang attention declares no B12X preparation unit and allocates its staging when bound; B12X's cache writes use their own plans"
+    ],
+    "tests/models/test_deepseek_v4_1_compressor_prepare.py": [
+      "the TileLang compressor's preparation: no B12X unit, storage bound before profiling"
+    ],
+    "tests/models/test_deepseek_v4_1_image_span.py": [
+      "the image span and merge row copies against torch, bit for bit"
+    ],
+    "tests/models/test_deepseek_v4_1_sp_prefill.py": [
+      "sequence-parallel prefill layout, collectives and lockstep model run"
+    ],
+    "tests/parser/engine/test_deepseek_v41.py": [
+      "the registered deepseek_v41 reasoning and tool parsers"
+    ],
+    "tests/test_custom_op_fill_defaults.py": [
+      "the env_override fill-defaults patch every custom op runs under"
+    ],
+    "tests/tokenizers_/test_deepseek_v41_effort.py": [
+      "reasoning-effort rendering"
+    ],
+    "tests/utils_/test_torch_utils.py": [
+      "weak references to captured graphs' nested outputs (changed by the series)"
+    ],
+    "tests/v1/core/test_kv_cache_utils.py": [
+      "KV cache grouping, packing and hashing the scheduler and runner use"
+    ],
+    "tests/v1/core/test_repetition_detection.py": [
+      "the loop detector and what check_stop does when it fires: the default thresholds, token soup, the reasoning parser's markers and the answer's horizons (0656, 0674, 0679)"
+    ],
+    "tests/v1/cudagraph/test_cudagraph_manager.py": [
+      "dense_varlen_decode_shapes covering odd c2 and full-depth speculative batches (0664), which the DSpark context ladder follows (0680)"
+    ],
+    "tests/v1/engine/test_utility_call_cleanup.py": [
+      "CPU utility caller lifetime: failed sends, cancellation, late replies, concurrent callers and ordinary results"
+    ],
+    "tests/v1/spec_decode/test_adaptive_verification.py": [
+      "adaptive verification budget, cost curves and compaction (on in production)"
+    ],
+    "tests/v1/spec_decode/test_dspark_v41_gathered_markov.py": [
+      "DS4.1 DSpark gathered Markov bias (top-k drafts)"
+    ],
+    "tests/v1/test_outputs.py": [
+      "LogprobsTensors non-blocking CPU span transfer and concatenation"
+    ],
+    "tests/v1/worker/test_display_carveout.py": [
+      "display carve-out allocation and integrity (DRM tests need the host device)"
+    ],
+    "tests/v1/worker/test_gpu_dp_utils.py": [
+      "the DP utilities around skipped drafting steps (changed by the series)"
+    ],
+    "tests/v1/worker/test_gpu_logprob_ranks.py": [
+      "logprob ranks in TileLang and their declarations"
+    ],
+    "tests/v1/worker/test_gpu_rejection_sampler_chunking.py": [
+      "verification chunking; the first chunk's offsets without a launch"
+    ],
+    "tests/v1/worker/test_gpu_sink.py": [
+      "sink detector and draft-zero rejection in the V2 runner: flags, alternates, cut, policy kernel, the collapse sequence through the real samplers"
+    ],
+    "tests/v1/worker/test_gpu_tilelang_sampling.py": [
+      "the sampling family in TileLang (Gumbel, temperature, sink, greedy verification's fused targets)"
+    ],
+    "tests/v1/worker/test_gpu_trace_replay.py": [
+      "the V2 worker's trace replay after the B12X and TileLang decoupling (changed by the series)"
+    ],
+    "tests/v1/worker/test_gpu_worker.py": [
+      "the GPU worker: startup plan, profiling memory accounting, and allocator cache flushes (changed by the series)"
+    ],
+    "tests/v1/worker/test_mixed_warmup_gate.py": [
+      "the kernel warm-up gate: fixed drafts warmed before the adaptive verification manager is restored"
+    ],
+    "tests/v1/worker/test_workspace.py": [
+      "workspace lanes and reservations; the TileLang attention scratch reserved in its model's lane, so the drafter's lane does not take the target's (changed by the series)"
+    ]
+  },
+  "head": "ab513d36db47820bad9eaaa3160b0e44e4ac82e1",
+  "repo": ".work/build/vllm-6d66eed35b0a-b12x-236ddff04a5f-38a6ea47/src/vllm"
+}
