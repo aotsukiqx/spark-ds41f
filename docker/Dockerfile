@@ -286,9 +286,11 @@ from packaging.requirements import Requirement
 
 # Every package built on CuTe DSL must accept the installed version: a locked
 # wheel set older than one consumer's requirement silently breaks that consumer
-# (quack-kernels 0.6.5 imports cutlass.base_dsl.enums, new in 4.7).
+# (quack-kernels 0.6.5 imports cutlass.base_dsl.enums, new in 4.7). The base
+# image's vLLM metadata is not checked here: serving replaces it with the
+# candidate source, whose requirements/cuda.txt is checked in the final stage.
 SHARED = ("nvidia-cutlass-dsl", "quack-kernels")
-for consumer in ("vllm", "quack-kernels", "flashinfer-python", "nvidia-cudnn-frontend", "tokenspeed-mla"):
+for consumer in ("quack-kernels", "flashinfer-python", "nvidia-cudnn-frontend", "tokenspeed-mla"):
     try:
         requirements = metadata.requires(consumer) or ()
     except metadata.PackageNotFoundError:
@@ -526,8 +528,9 @@ for name in built:
 # TileLang and B12X's CuTe DSL stack share apache-tvm-ffi, and TileKernels
 # needs TileLang: every consumer must accept the installed versions. The
 # serving vLLM is the candidate source, so its requirements/cuda.txt pins
-# apply rather than the base image's vLLM metadata.
-SHARED = {"apache-tvm-ffi", "tilelang"}
+# apply rather than the base image's vLLM metadata; the CuTe DSL pair moves
+# with the candidate too, so its requirement is checked the same way.
+SHARED = {"apache-tvm-ffi", "tilelang", "nvidia-cutlass-dsl"}
 for dist in metadata.distributions():
     consumer = canonicalize_name(dist.metadata["Name"] or "")
     if consumer != "vllm":
