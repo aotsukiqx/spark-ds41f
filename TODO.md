@@ -285,6 +285,11 @@ Open levers:
   cold prefill). Reopens only on a live agent-trace record showing far-history
   scans at high frequency, or a longer request limit; see
   `experiments/2026-11-21-copy-scan-window/`.
+- **In-kernel `prefetch_l2` emission (2026-11-21): closed.** The separate
+  prefetch kernel runs on a side stream ahead of decode; emission would save one
+  launch and a few host calls per step (~10-20 us, 0.02-0.05% of a c1 step) and
+  cannot add overlap or change the policy. See
+  `experiments/2026-11-13-upstream-primitives/ITEM3-prefetch-design.md` (Verdict).
 - **Draft depth by load or recent acceptance.** Five DSpark drafts pay off on
   high-acceptance code at one stream (`+14–18%`), whereas live agent traffic and
   8–16 stream prose accept fewer tokens per step. Screen load-aware

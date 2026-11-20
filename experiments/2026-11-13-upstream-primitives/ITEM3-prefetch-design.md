@@ -54,3 +54,21 @@ exactly what the screen must measure — the README makes no claim.
 - PDL ordering: `0520-0525` chains decode kernels with programmatic dependent
   launch; a prefetch issued in-kernel must not be reordered behind the
   consumer's own loads by PDL — check the generated PTX once, by hand.
+
+## Verdict (2026-11-21): closed — the saving is one side-stream launch per step
+
+The design above kept the same eviction policy (`evict_last`) and the same data;
+what in-kernel emission removes is the *separate* prefetch kernel and its
+host-side per-step schedule. That path runs on a side stream ahead of the decode
+kernels, so its cost is one launch plus a few host calls per step — order 10-20 us
+against a 43 ms c1 step (0.02-0.05%), already overlapped: the 1107 profile shows
+the GPU busy 98.9% of the step with 0.49 ms of idle, all of it metadata launches.
+
+In-kernel emission cannot create additional overlap (the side path already runs
+ahead) and cannot change the prefetch effect (same policy, same bytes), so its
+ceiling is the launch overhead, below every interval this site resolves.
+**Do not implement.** The remaining measurable upside is acceptance, not step
+time: live agent traffic accepts 1.89 drafts of 3.40 verified per step against
+3.1 on the bench, i.e. tokens/step, which the speculative-decoding levers in
+`TODO.md` (draft depth by load, cross-request verify allocation, drafter reuse of
+the target's indexer top-k) attack directly.
