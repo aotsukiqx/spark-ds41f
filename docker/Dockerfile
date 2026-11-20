@@ -311,7 +311,7 @@ ENV VLLM_NATIVE_CACHE_DIR=/opt/spark-ds41f/native
 
 ARG CUTLASS_DSL_VERSION=unrecorded
 
-RUN CUTLASS_DSL_VERSION=${CUTLASS_DSL_VERSION} LIBRARY_PATH=/usr/local/cuda/lib64/stubs python3 - <<'PY'
+RUN CUTLASS_DSL_VERSION=${CUTLASS_DSL_VERSION} NCCL_REF=${NCCL_REF} LIBRARY_PATH=/usr/local/cuda/lib64/stubs python3 - <<'PY'
 import ctypes
 import hashlib
 import importlib.metadata as metadata
@@ -329,11 +329,16 @@ from vllm.model_executor.model_loader.direct_io import _native as direct_native
 from vllm.models.deepseek_v4_1.engram_rows import _native as engram_native
 
 # torch.cuda.nccl.version() reports the NCCL torch was compiled against, so
-# ask the installed library itself (NCCL_VERSION_CODE 2.30.7 = 23007).
+# ask the installed library itself and compare it with the lock's tag
+# (NCCL_VERSION_CODE = major*10000 + minor*100 + patch).
 nccl = "/usr/local/lib/python3.12/dist-packages/nvidia/nccl/lib/libnccl.so.2"
 version = ctypes.c_int()
 assert ctypes.CDLL(nccl).ncclGetVersion(ctypes.byref(version)) == 0
-assert version.value == 23007, version.value
+nccl_ref = os.environ["NCCL_REF"]
+release = nccl_ref.rsplit("/", 1)[-1].removeprefix("v").split("-")[0]
+major, minor, patch = (int(part) for part in release.split("."))
+expected_nccl = major * 10000 + minor * 100 + patch
+assert version.value == expected_nccl, (version.value, expected_nccl, nccl_ref)
 with open(nccl, "rb") as handle:
     built = open("/opt/spark-ds41f/nccl/libnccl.so.2.sha256").read().strip()
     assert hashlib.sha256(handle.read()).hexdigest() == built, "NCCL is not the patched build"
