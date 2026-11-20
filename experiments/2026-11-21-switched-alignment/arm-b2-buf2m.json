@@ -1,0 +1,11 @@
+{
+  "notes": "B2 arm: NCCL_BUFFSIZE 1 MiB -> 2 MiB on the deployed site stack, the one 2026-11-20 sweep arm never run. Re-opened after the lossless fabric landed (2026-11-20): pre-2026-11-20 the best-effort switch dropped large incast messages, so a bigger buffer was untestable; the CRS812 QoS block + host dcb now carry them without loss. One variable, env-only, no image change.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "environment": {
+      "NCCL_BUFFSIZE": "2097152"
+    }
+  }
+}
