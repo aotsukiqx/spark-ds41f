@@ -1,0 +1,13 @@
+{
+  "extends": {
+    "config": "experiments/2026-11-20-nccl-2.32/arm-tp4-switched.json"
+  },
+  "notes": "NCCL 2.32 knob sweep 'ar1' on the switched site: the deployed spark-ds41f:1107-nccl-2.32.6 stack with only the listed NCCL environment changed. One boot, default quality+decode; the two deployed-number boots are the control.",
+  "set": {
+    "environment": {
+      "NCCL_IB_ADAPTIVE_ROUTING": "1",
+      "NCCL_DEBUG": "INFO",
+      "NCCL_DEBUG_SUBSYS": "INIT,GRAPH"
+    }
+  }
+}
