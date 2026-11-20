@@ -290,6 +290,18 @@ Open levers:
   launch and a few host calls per step (~10-20 us, 0.02-0.05% of a c1 step) and
   cannot add overlap or change the policy. See
   `experiments/2026-11-13-upstream-primitives/ITEM3-prefetch-design.md` (Verdict).
+- **Draft depth by load: upstream already ships it; DSpark covers the same
+  economics at the row level (review 2026-11-21).** `num_speculative_tokens_per_batch_size`
+  and `adaptive_speculative_tokens_window` are in upstream `vllm/config/speculative.py`
+  at our base (6d66eed3), i.e. mature, and our DSpark port already trades rows
+  against cost: `adaptive_verification_row_cost`, `dead_rows_tau`, per-slot
+  `assign_draft_budget`, survival-based dead-row pruning and the copy-drafter cap.
+  Threading a variable depth into `dspark/speculator.py` (which currently reshapes
+  with the module maximum) would add compatibility, not a new economic decision:
+  the same tradeoff is already made downstream. If this is pursued, tune the
+  existing parameters (`adaptive_verification_row_cost` 0.035, `dead_rows_tau`
+  0.2, copy cap) as a config-only sweep first; see
+  `experiments/2026-11-21-draft-depth/`.
 - **Draft depth by load or recent acceptance.** Five DSpark drafts pay off on
   high-acceptance code at one stream (`+14–18%`), whereas live agent traffic and
   8–16 stream prose accept fewer tokens per step. Screen load-aware

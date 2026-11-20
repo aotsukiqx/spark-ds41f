@@ -66,3 +66,25 @@ concurrency.
 
 Until then the recipe keeps five drafts at every batch size. `arm-adapt8` is not
 run: it shares the failing reshape.
+
+## Review (2026-11-21): the idea is mature upstream and already present locally
+
+`num_speculative_tokens_per_batch_size` and `adaptive_speculative_tokens_window`
+exist in **upstream** `vllm/config/speculative.py` at our base commit
+(`6d66eed3`, lines 486/493) — they are not a gap someone forgot to try.
+
+Our DSpark port makes the same tradeoff at a different layer
+(`spec_decode/adaptive_verification.py`): a per-step cost model
+(`1 + row_cost * effective_rows`), survival-based dead-row pruning
+(`dead_rows_tau`), per-slot `assign_draft_budget`, and the copy drafter's cap
+doubling. So the engine already decides *how much verification work a step may
+spend*; changing the proposer's draft depth would duplicate that decision one
+layer earlier.
+
+Consequence: threading the effective depth into `dspark/speculator.py` is a
+**compatibility fix**, not an optimization by itself, and its expected marginal
+gain is small against the risk (hot path, CUDA-graph shapes, acceptance). If the
+economics are to be revisited, tune the parameters that already control it —
+`adaptive_verification_row_cost` (0.035) and `dead_rows_tau` (0.2), plus the
+copy-drafter cap — as a config-only sweep with paired suites. That is the
+non-duplicative version of this lever.
