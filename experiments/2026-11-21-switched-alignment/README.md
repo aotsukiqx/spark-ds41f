@@ -69,35 +69,49 @@ the regime where the loss bites.
 
 ### B. Switched-fabric optimization (site-only, after or beside A)
 
-1. **`B1` lossless class**: `roce_traffic_class: 106` (DSCP 26 + ECT(0)) in the
-   site node map, plus boot-time `dcb app add … dscp-prio 26:3` and
-   `dcb pfc set … prio-pfc 3:on` on both interfaces of every node — and the
-   **switch must map DSCP 26 to a lossless queue with PFC (owner/infra action;
-   the site's switch config is not recorded in this repo)**. Acceptance:
-   `roce_adp_retrans`/`out_of_sequence` flat across a 131K and a 500K prefill
-   round, prio-3 counters carrying the traffic, no starvation of the other
-   classes, prefill/decode unchanged or better.
+1. **`B1` lossless class** — re-scoped after the switch was identified
+   (owner, 2026-11-21): the site's switch is a **MikroTik CRS812-8DS-2DQ-2DDQ-RM
+   (Marvell 98DX7335, Prestera)**; each Spark reaches it over **one QSFP56**
+   (the two HCAs are the two PCIe Gen5 x4 paths behind that one port — the
+   DGX Spark user guide's model; all 8 interfaces negotiate 200,000 Mb/s, so
+   the official playbook's 100G auto-negotiation trap does not apply). An
+   earlier attempt to configure RoCE on the switch broke cluster connectivity
+   and was reverted; best-effort is also the official NVIDIA baseline for
+   switch clustering (the `multi-sparks-through-switch` playbook configures a
+   plain L2 bridge, no PFC). The counters above show the cost of staying
+   best-effort is small at our message sizes (bounded by the 1 MiB NCCL buffer
+   and 2 MiB one-shot dispatch), so **B1 is a robustness/tail-latency lever,
+   not a throughput fix**, and it only counts with a *symmetric* config:
+
+   - switch: RouterOS >= 7.21/7.22 with firmware upgraded after it
+     (`lossless-traffic-class`/`lossless-buffers` need the firmware), the
+     proven CRS812 recipe from the DGX-Spark deployment notes — `pfc=pfc-tc3`,
+     `trust-l3=keep`, DSCP map `roce=tc3, cnp=tc6`, `l2mtu=9500`, and **no
+     egress-rate shaping** (the chip's shaper caps at 100G and would halve the
+     link); on the QSFP-DD breakout ports, never reset `advertise` or the
+     second 200G sub-port drops;
+   - hosts: boot-time `dcb app add dev <if> dscp-prio 26:3` +
+     `dcb pfc set dev <if> prio-pfc 3:on` on both interfaces of every node;
+   - node map: `roce_traffic_class: 106`.
+
+   A half-configured state (switch PFC without host marking, or the reverse)
+   reproduces the earlier outage: pause frames land on a priority that carries
+   everything and the fabric head-of-line blocks. Acceptance unchanged:
+   retrans/oos flat across a 131K and a 500K prefill round, prio-3 counters
+   carrying the traffic, prefill/decode unchanged or better.
 2. **`B2` `NCCL_BUFFSIZE=2 MiB`**: the one arm of the 2026-11-20 sweep that never
    ran (the sweep aborted). Debug-free, two boots, against the deployed arm's
-   control.
-3. **`B3` rail asymmetry watch**: if marking lands and losses persist on one
-   rail, chase the switch port; the current uniformity says systemic, not hardware.
-
-### C. Give back to upstream (one conceptual patch = one PR; on acceptance drop
-the local patch and advance the pin)
-
-1. DSpark speculator effective-depth reshape (`num_speculative_tokens_per_batch_size`
-   / adaptive window crash: the speculator reshapes with the module maximum 5
-   instead of the step's effective depth) — a correctness fix in upstream's own
-   feature, and it unblocks the draft-depth lever.
-2. `--prefill-yield` (0545): model-agnostic, measured 3.6x sooner short-request
-   first token beside a 131K prefill.
-3. `0227` tokenizer spelling.
+   control. Note the shaper interaction above does not apply: this arm only
+   changes the host-side buffer.
+3. **`B3` path asymmetry watch**: the loss is uniform across nodes and both
+   PCIe paths, so it is systemic, not hardware; revisit only if marking lands
+   and one path stays dirty.
 
 ## Blocked on the owner
 
-- Switch-side PFC/lossless-class configuration for `B1` (and the switch model
-  recorded here).
+- The symmetric lossless config for `B1` (RouterOS/firmware version first, then
+  the switch-side recipe, then the hosts), or an explicit decision to stay on
+  the official best-effort baseline.
 - A window for `A1`/`A2`/`B2` (two boots each; ~1 h per arm with the gate).
 - The promotion decision for the A3 release.
 
