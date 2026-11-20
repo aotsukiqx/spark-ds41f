@@ -1,0 +1,11 @@
+{
+  "notes": "NCCL 2.32 knob sweep 'ch16-clean': only NCCL_MAX_NCHANNELS=16 on the deployed spark-ds41f:1107-nccl-2.32.6 stack, without the sweep's NCCL_DEBUG=INFO, so the channel change is compared with the deployed arm alone.",
+  "extends": {
+    "config": "experiments/2026-11-20-nccl-2.32/arm-tp4-switched.json"
+  },
+  "set": {
+    "environment": {
+      "NCCL_MAX_NCHANNELS": "16"
+    }
+  }
+}
