@@ -83,16 +83,29 @@ the regime where the loss bites.
    and 2 MiB one-shot dispatch), so **B1 is a robustness/tail-latency lever,
    not a throughput fix**, and it only counts with a *symmetric* config:
 
-   - switch: RouterOS >= 7.21/7.22 with firmware upgraded after it
-     (`lossless-traffic-class`/`lossless-buffers` need the firmware), the
-     proven CRS812 recipe from the DGX-Spark deployment notes — `pfc=pfc-tc3`,
-     `trust-l3=keep`, DSCP map `roce=tc3, cnp=tc6`, `l2mtu=9500`, and **no
-     egress-rate shaping** (the chip's shaper caps at 100G and would halve the
-     link); on the QSFP-DD breakout ports, never reset `advertise` or the
-     second 200G sub-port drops;
+   - switch (owner reports **7.25.1**, which clears the 7.21/7.22 RoCE
+     prerequisite and adds 7.23+'s automatic DSCP mapping; verify
+     `/system resource print` and `/system routerboard print` both say 7.25.1):
+     `/export file=before-roce` first, then the staged recipe — QoS profiles
+     `dscp=26->tc3 (roce)` and `dscp=48->tc6 (cnp)`, the DSCP map, tx-manager
+     queue 3 `ecn=yes` and queue 6 strict-priority, a PFC profile
+     `traffic-class=3 rx=yes tx=yes`, per port `trust-l3=trust`,
+     `pfc=pfc-roce`, `egress-rate-queue3=0`, `l2mtu=9500`; **nothing takes
+     effect until `/interface/ethernet/switch set switch1 qos-hw-offloading=yes`,
+     and the rollback is the same command with `no`**. Two sources disagree on
+     the egress rate: the fabric guide sets `egress-rate-queue3=200G`, the
+     CRS812 record shows the 98DX7335 shaper rejects >100G and runs `0`
+     (PFC arithmetic uses the PHY rate); use `0`. On the QSFP-DD breakout
+     ports never reset `advertise` or the second 200G sub-port drops;
    - hosts: boot-time `dcb app add dev <if> dscp-prio 26:3` +
      `dcb pfc set dev <if> prio-pfc 3:on` on both interfaces of every node;
-   - node map: `roce_traffic_class: 106`.
+   - node map `roce_traffic_class: 106` (sparknet marks, and NCCL takes
+     `NCCL_IB_TC` from it) plus `NCCL_IB_SL=3` in the shape's environment.
+
+   Safe order: the switch's QoS block is inert until the master command, and
+     nothing lands in tc3 until the hosts label — stage the switch, activate,
+     confirm the cluster still healthy, then hosts, then the marking in a
+     window with the restart.
 
    A half-configured state (switch PFC without host marking, or the reverse)
    reproduces the earlier outage: pause frames land on a priority that carries
