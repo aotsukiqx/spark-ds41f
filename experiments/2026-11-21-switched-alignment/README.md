@@ -34,24 +34,52 @@ and should measure identical. The switchless shapes (ring, triangle) still need
 
 ### The switched fabric is losing packets in the best-effort class
 
-`roce_traffic_class` is unset in `config/nodes-switched.local.json`, and the
-hosts run PFC off on both interfaces (MTU 9000). Cumulative since boot
-(~6.3 days), `roce_adp_retrans`/`out_of_sequence` per rail:
+Correction (verified 2026-11-21): the hosts were never unmarked. The pinned
+sparknet renderer decides marking by transport (`SWITCHED_TRAFFIC_CLASS = 106`
+for `oneshot-switched`, `sparknet/topology/nodes.py`; the node-map
+`roce_traffic_class` field is informational at this revision), and the live
+container has carried `NCCL_IB_TC=106` + `SPARKNET_ROCE_TRAFFIC_CLASS=106` all
+along. The unconfigured side is the **switch**: without its QoS block the DSCP
+26 label is ignored and everything rides the default best-effort queue, which
+is where these losses come from. The hosts also ran PFC off and no dscp-prio
+map, so the NICs put the marked traffic in the prio-0 queue and would not
+honour pauses. Cumulative since boot (~6.3 days), `roce_adp_retrans`/
+`out_of_sequence` per PCIe path:
 
-| node | rail A | rail B |
+| node | path A | path B |
 | --- | ---: | ---: |
 | spark-eb1a | 16,849 / 343,103 | 17,701 / 342,035 |
 | spark-141e | 17,383 / 270,745 | 17,676 / 268,476 |
 | spark-a89f | 17,975 / 323,914 | 18,563 / 321,911 |
 | spark-2fe7 | 18,602 / 367,763 | 19,211 / 365,728 |
 
-Uniform across nodes and rails (not a cable), flat at idle (two samples minutes
-apart identical), so it is incast loss in the default class — exactly the
-signature `docs/switched-fabric.md` records: an unmarked lossless class protects
-nothing, and the external switched-GB10 report measured retransmission-free
-174-182 Gb/s with `NCCL_IB_TC=106` against 95→78 Gb/s degrading unmarked.
-Prefill chunks at the 16,384 budget all-reduce tens of MB per layer, so this is
-the regime where the loss bites.
+Uniform across nodes and paths (not a cable), flat at idle, so it is incast
+loss in the default class. Prefill chunks at the 16,384 budget all-reduce tens
+of MB per layer — the regime where the loss bites as tail stalls.
+
+## B1 host side: applied and verified (2026-11-20 15:0xZ window)
+
+Owner-declared maintenance. Production stopped once (~20 s), then on all four
+nodes: `spark-ds41f-dcb.service` (oneshot, enabled, `Before=docker.service`)
+applying `dcb app replace dev {enp1s0f1np1,enP2p1s0f1np1} dscp-prio 26:3` and
+`dcb pfc set … prio-pfc 3:on`; production restarted (+118.7 s, unchanged image
+and env). Verified after a quality+decode gate and two 131K prefills:
+
+- `dcb app` shows `dscp-prio AF31:3` and PFC `3:on` on all 8 interfaces;
+- **`tx_prio3_packets` carries the load** (175.2 M packets on the head's two
+  interfaces after the run; 0 before the change — all traffic was prio-0),
+  `rx_prio3_packets` stays 0 (inbound RoCE arrives untagged; the switch's
+  `trust-l3` covers that side), pause-storm counters 0;
+- counters still climb under load (`roce_adp_retrans` +12, `out_of_sequence`
+  +343 on the head across the ~5-minute load) — **expected**: nothing at the
+  switch honours prio 3 yet;
+- performance unchanged: `code-c1` 30.14 ms, `prose-c1` 27.72 ms, prefill
+  131,072 8,282.9 tok/s (n=2), quality 5/5, memory floor 20.6 GiB
+  (`results/private/bench/2026-11-21-b1-host-dcb/`).
+
+Remaining for B1: the switch block (below). Once it lands, the acceptance run
+is the same gate + 131K/500K prefills with retrans/oos flat and the switch's
+pause counters sane.
 
 ## Plan
 
