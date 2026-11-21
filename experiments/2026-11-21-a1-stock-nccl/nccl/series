@@ -1,0 +1,6 @@
+# Stock NVIDIA/nccl v2.32.6-1: no local patches on the switched fabric.
+# 0001 (IB CTS nreqs ordering) is upstream in 2.32 (0bb8dec4); 0002-0004 act
+# only under NCCL_SWITCHLESS_BIDIRECTIONAL, which this site never sets, so the
+# switched site carries no NCCL delta at all (experiments/2026-11-21-switched-alignment,
+# A1). The switchless shapes keep patches/nccl until 0003/0004 are re-expressed
+# in 2.32's src/tuning/.

@@ -1,0 +1,20 @@
+{
+  "notes": "A1 alignment arm: NCCL v2.32.6-1 rebuilt for SM121 with an empty patch series. On the switched site every local NCCL patch is dead weight (0001 is upstream at 2.32; 0002-0004 are gated on NCCL_SWITCHLESS_BIDIRECTIONAL, unset here), so stock must measure identical to the deployed arm; the win is the patch stack, not speed. Base: the site profile (vLLM 6d66eed3 + CUTLASS 4.8.1 + TileLang b1367a59 stack, NCCL_BUFFSIZE 2 MiB since the B2 promotion).",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-nccl-2.32.6-stock",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+        "local.spark-ds41f.b12x.tree": "04e0ee957d6992e5c7c0896acd75b6a02b20b924",
+        "local.spark-ds41f.nccl.tree": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
+        "local.spark-ds41f.tilelang.tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-21-a1-stock-nccl/upstreams.lock.json"
+  }
+}
