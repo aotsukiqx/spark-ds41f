@@ -1,24 +1,26 @@
-From 1e604d439ca4dba91539701071c01b3d06cb0be6 Mon Sep 17 00:00:00 2001
+From 87bbc3d06012135477c7a158b38bc140e846e18c Mon Sep 17 00:00:00 2001
 From: aotsukiqx <y.aotsuki@gmail.com>
 Date: Sat, 21 Nov 2026 15:23:05 +0800
 Subject: [PATCH] Re-express switchless patches 0003/0004 on 2.32.6-1: lazy
  MIN_TRAFFIC_PER_CHANNEL + balanced tiny-ring threads
 
 ---
- src/channel.cc               |  8 ++++++++
- src/enqueue/enqueue.cc       |  9 +++++++++
+ src/channel.cc               | 12 +++++++++++-
+ src/enqueue/enqueue.cc       | 11 ++++++++++-
  src/include/channel.h        |  6 +++++-
- src/tuning/tuning_general.cc | 19 +++++++++++++++++++
- 4 files changed, 41 insertions(+), 1 deletion(-)
+ src/tuning/tuning_general.cc | 23 ++++++++++++++++++++++-
+ 4 files changed, 48 insertions(+), 4 deletions(-)
 
 diff --git a/src/channel.cc b/src/channel.cc
-index 06ce6f9..c9e9562 100644
+index 06ce6f9..c45c028 100644
 --- a/src/channel.cc
 +++ b/src/channel.cc
-@@ -27,6 +27,14 @@ int ncclFuncTrafficPerByte(ncclFunc_t func, int nRanks) {
+@@ -27,6 +27,16 @@ int ncclFuncTrafficPerByte(ncclFunc_t func, int nRanks) {
    }
  }
  
++int64_t ncclParamMinTrafficPerChannel();
++
 +size_t ncclMinTrafficPerChannel() {
 +  static size_t value = [] {
 +    int64_t v = ncclParamMinTrafficPerChannel();
@@ -30,8 +32,17 @@ index 06ce6f9..c9e9562 100644
  size_t ncclCollTrafficPerChannel(size_t trafficBytes, int nChannels) {
    return nChannels > 0 ? DIVUP(trafficBytes / nChannels, 16) * 16 : 0;
  }
+@@ -37,7 +47,7 @@ struct ncclCollChannelLayout ncclComputeCollChannelLayout(size_t count, size_t e
+   struct ncclCollChannelLayout layout = {};
+   if (count == 0 || maxChannels <= channelId) return layout;
+ 
+-  size_t cellSize = DIVUP(DIVUP(ncclMinTrafficPerChannel, (size_t)trafficPerByte), 16) * 16;
++  size_t cellSize = DIVUP(DIVUP(ncclMinTrafficPerChannel(), (size_t)trafficPerByte), 16) * 16;
+   layout.elementsPerCell = cellSize / elementSize;
+   size_t cells = DIVUP(count * elementSize, cellSize);
+   size_t trafficPerCell = cellSize * trafficPerByte;
 diff --git a/src/enqueue/enqueue.cc b/src/enqueue/enqueue.cc
-index 9565204..d8300f7 100644
+index 9565204..5e3c60c 100644
 --- a/src/enqueue/enqueue.cc
 +++ b/src/enqueue/enqueue.cc
 @@ -657,6 +657,15 @@ ncclResult_t ncclPrepareTasks(struct ncclComm* comm, bool* algoNeedConnect, bool
@@ -50,6 +61,15 @@ index 9565204..d8300f7 100644
    struct ncclKernelPlanner* planner = &comm->planner;
    // Estimate number of tasks that will fit in this plan.
    int nPlanColls = 0;
+@@ -683,7 +692,7 @@ static ncclResult_t scheduleCollTasksToPlan(struct ncclComm* comm, struct ncclKe
+       nPlanColls += 1;
+       workBytes += workNode->size;
+       int kind = 2 * task->isCollnet + task->isNvls;
+-      trafficBytes[kind] += std::max(ncclMinTrafficPerChannel, task->trafficBytes);
++      trafficBytes[kind] += std::max(ncclMinTrafficPerChannel(), task->trafficBytes);
+       // minCTAs/maxCTAs are resolved (env > per-call > comm) at task-append time, so they are
+       // applied unconditionally; comm defaults (minCTAs=1, maxCTAs=MAXCHANNELS) are no-ops on the base.
+       // We must check the minCTAs first to avoid the case where task->minCTAs > task->maxCTAs.
 diff --git a/src/include/channel.h b/src/include/channel.h
 index 2922300..9d5c42d 100644
 --- a/src/include/channel.h
@@ -68,7 +88,7 @@ index 2922300..9d5c42d 100644
  struct ncclCollChannelLayout {
    size_t countLo;
 diff --git a/src/tuning/tuning_general.cc b/src/tuning/tuning_general.cc
-index 1d3cc11..3202632 100644
+index 1d3cc11..a728f61 100644
 --- a/src/tuning/tuning_general.cc
 +++ b/src/tuning/tuning_general.cc
 @@ -12,6 +12,10 @@
@@ -82,28 +102,37 @@ index 1d3cc11..3202632 100644
  NCCL_PARAM(Nthreads, "NTHREADS", -2);
  NCCL_PARAM(Ll128Nthreads, "LL128_NTHREADS", -2);
  
-@@ -72,6 +76,20 @@ float ncclTuningGetTime(struct ncclTuningInput_t* const inputs, int a, float lat
+@@ -72,6 +76,9 @@ float ncclTuningGetTime(struct ncclTuningInput_t* const inputs, int a, float lat
    return time;
  }
  
 +
++
++
+ static int ncclTuningGetNthreads(const char* name, int env, int min, int max, int def) {
+   int nt = env;
+   if (nt > 0) {
+@@ -146,6 +153,19 @@ ncclResult_t ncclTuningSetThreadThresholds(struct ncclComm* comm) {
+   return ncclSuccess;
+ }
+ 
 +int64_t ncclParamSwitchlessBidirectional();
 +
 +// Preserve the four direction/root lanes of bidirectional switchless rings by
 +// shrinking a tiny Ring's blocks before shrinking its channel count. Larger
 +// messages and every other mode keep upstream thread selection.
-+static inline void balanceSwitchlessThreads(struct ncclTuningInput* input, int* nt) {
++static inline void balanceSwitchlessThreads(ncclTuningInput_t* input, int* nt) {
 +  if (ncclParamSwitchlessBidirectional() != 2 || input->comm->nChannels < 4) return;
-+  if (input->op != NCCL_FUNC_ALL_REDUCE && input->func != NCCL_FUNC_ALL_REDUCE) return;
++  if (input->func != ncclFuncAllReduce) return;
 +  int nc = input->comm->nChannels;
 +  int threadThreshold = input->comm->tuningContext.threadThresholds[NCCL_ALGO_RING][NCCL_PROTO_SIMPLE];
 +  while (*nt > 128 && input->nBytes < (size_t)nc * (size_t)*nt * (size_t)threadThreshold) *nt /= 2;
 +}
 +
- static int ncclTuningGetNthreads(const char* name, int env, int min, int max, int def) {
-   int nt = env;
-   if (nt > 0) {
-@@ -176,6 +194,7 @@ ncclResult_t ncclTuningGetChannels(struct ncclTuningInput_t* const input, struct
+ ncclResult_t ncclTuningGetChannels(struct ncclTuningInput_t* const input, struct ncclTuningResult_t* const result,
+                                    bool forceMaxTreeThreads) {
+   int nc = input->comm->nChannels;
+@@ -176,6 +196,7 @@ ncclResult_t ncclTuningGetChannels(struct ncclTuningInput_t* const input, struct
      nc = input->comm->nvlsChannels;
    } else {
      // Ring/Tree/one-RPN PAT channel tuning
@@ -111,6 +140,15 @@ index 1d3cc11..3202632 100644
      while (input->nBytes < nc * nt * threadThreshold) {
        if (nc >= 2) nc--;
        else break;
+@@ -251,7 +272,7 @@ int ncclTuningGetActiveChannels(struct ncclTuningInput_t* const input, const str
+   if (result->proto == NCCL_PROTO_LL) trafficPerByte *= 4;
+ 
+   size_t elementSize = ncclTypeSize(input->datatype);
+-  size_t trafficBytes = std::max(ncclMinTrafficPerChannel, input->count * elementSize * trafficPerByte);
++  size_t trafficBytes = std::max(ncclMinTrafficPerChannel(), input->count * elementSize * trafficPerByte);
+   size_t trafficPerChannel = ncclCollTrafficPerChannel(trafficBytes, maxChannels);
+   return ncclComputeCollChannelLayout(input->count, elementSize, trafficPerByte, trafficPerChannel,
+                                       /*currentTraffic=*/0, /*channelId=*/0, maxChannels)
 -- 
 2.51.2
 
