@@ -125,6 +125,11 @@ To make such a lock, drop `sources.b12x` from the candidate's lock (the source m
 
 ## Contributing back
 
+Standing policy (owner, 2026-11-22): this deployment absorbs valuable code and
+ideas from upstream; it does not currently open PRs. Local work is published on
+the fork only (`aotsukiqx/spark-ds41f`). The procedure below applies when a
+contribution is actually made.
+
 One conceptual local patch should become one upstream branch and pull request.
 Preserve tests and benchmark evidence alongside it. After acceptance:
 

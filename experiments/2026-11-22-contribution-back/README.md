@@ -1,11 +1,19 @@
-# Contribution-back: three PRs to local-inference-lab/vllm
+# Contribution-back: three packaged patches (PR gate cancelled 2026-11-22)
+
+**Owner decision (2026-11-22): no PRs are opened.** Policy: we absorb
+valuable code and ideas from `origin`; our code stays on the fork
+(`aotsukiqx/spark-ds41f`, branch `site/spark-eb1a`) only. The packages below
+remain as review-ready descriptions of what changed and why — usable as
+upstream-PR material if the policy is ever reversed, and as the reference for
+the deltas we carry locally.
 
 One conceptual patch per PR (docs/upstreams.md, "Contributing back"). The
-patches below are the already-qualified local work, packaged for review; the
-owner pushes each as one branch of `christopherowen/vllm` against
-`local-inference-lab/vllm` `integration/karmic-kraken-beta`. On acceptance:
-advance the pinned revision, drop the local patch from the series, rebuild
-once, reproduce the baseline (same commit).
+patches below are the already-qualified local work, packaged for review; had
+they been sent, the owner would push each as one branch of
+`christopherowen/vllm` against `local-inference-lab/vllm`
+`integration/karmic-kraken-beta`. On acceptance: advance the pinned revision,
+drop the local patch from the series, rebuild once, reproduce the baseline
+(same commit).
 
 ## 1. `0227-tokenizer-spellings/` — ready to send
 
