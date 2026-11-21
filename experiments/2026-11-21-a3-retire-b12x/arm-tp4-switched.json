@@ -16,4 +16,7 @@
     },
     "upstreams_config": "experiments/2026-11-21-a3-retire-b12x/upstreams.lock.json"
   }
+  "unset": [
+    "container.expected_labels.local.spark-ds41f.b12x.tree"
+  ],
 }
