@@ -1,0 +1,19 @@
+{
+  "notes": "A2 alignment arm: the TileLang pin moves b1367a59 -> ac88f5bc (+2 upstream commits, both classified NO-OP for us: an FFI Layout serialization fix our in-process Layouts never exercise, and a docs commit). The 13-patch SM120/SM121 series is unchanged; a fresh kernel-cache namespace appears per rank. Everything else is the site stack (stock NCCL, 2 MiB buffer).",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1107-tilelang-ac88f5b",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+        "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+        "local.spark-ds41f.tilelang.tree": "prepare-fills",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-21-a2-tilelang-ac88f5b/upstreams.lock.json"
+  }
+}
