@@ -30,13 +30,39 @@ commits on `a3-retire` in order; a pristine worktree of the vLLM base
 
 Stop production; on the head `build prepare --lock` (the lock has no
 `sources.b12x`; the image's smoke must confirm B12X is not installed),
-`build check`, `build image --apply --tag spark-ds41f:a3-no-b12x`, `build
-distribute --apply`; two boots with the gate (`quality,decode`, `--allow-mismatch
---cool-below 0`) and a cooled 131K prefill (524K referenced from the same-day
-stack runs — spark-141e's thermal ceiling). Expected: identical to the adopted
-A2 stack (c1 ~27.7/30.2 ms, prefill 131K in the 8,627-8,716 spread), plus the
-image-level proof that nothing imports B12X.
+`build check`, `build image --apply`, `build distribute --apply`; two clean
+boots (containers removed first — `--replace` reuses an existing stopped
+container by that name and must not be trusted for an image change) with the
+gate (`quality,decode`, `--allow-mismatch --cool-below 0`) and a cooled 131K
+prefill (524K referenced from the same-day stack runs — spark-141e's thermal
+ceiling).
 
-## Results
+## Results (window 2026-11-21; five build rounds, r1-r4 preserved as evidence)
 
-Filled after the window.
+Four runtime defects surfaced one per boot and were fixed into the series
+(receipts under `runs/failed-starts/`):
+
+| round | defect | fix (folded into the series) |
+| --- | --- | --- |
+| r1 (tree 98aadb51) | `NameError: build_geometry` — engram.py lacked the in-tree geometry import | 0701 imports `common.engram_geometry` |
+| r2 (tree 49a952a6) | `'str' object has no attribute 'layer_ids'` — the reworked `ParallelEngramEmbedding` kept an October `plan` parameter the call site no longer passes | 0701 signature is `(caps, geometry, table_memory)` |
+| r3 (tree 329650ee) | the r2 rebase dropped the r1 import fix | re-added; exports now grep-verified before build |
+| r4 (tree 51554e28) | `ImportError: get_b12x_packed_bf16_vocab_projection` — packed_bf16.py kept the removed B12X accessor in three fallback branches | the packed head is TileLang-only (`is_supported`, `pack`, `packed_weight`); zero `get_b12x_packed` references remain |
+
+**r5 (`spark-ds41f:a3-no-b12x-r5`, vLLM tree `51554e28`, sha recorded in the
+profile) booted clean on the first try** and measures:
+
+| measure | A2 reference | A3 boot 1 | A3 boot 2 |
+| --- | ---: | ---: | ---: |
+| quality | 5/5 | 5/5 | 5/5 |
+| `prose-c1` / `code-c1` step | 27.71-27.97 / 30.22-30.62 ms | 28.00 / 30.80 | 27.79 / 30.30 |
+| prefill 131,072 | 8,653-8,716 | **8,654.7** (cooled) | — |
+| retrans / oos | flat | flat | flat |
+| B12X in container | installed (unused loader modules) | **not installed** | **not installed** |
+
+**Verdict: identical within the same-day spread, with B12X gone from the image,
+the lock and the labels. Adopted**: the site profile runs
+`spark-ds41f:a3-no-b12x-r5` on the A3 lock (648 active vLLM patches; 0707/0708
+TODO- placeholders); A2's image remains the rollback. The next release folds
+this into the recipe per docs/upstreams.md "Locks without B12X". Receipts:
+`results/private/bench/2026-11-21-a3-r5-*`, `runs/failed-starts/`.
