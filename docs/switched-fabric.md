@@ -157,6 +157,19 @@ error. With `NCCL_IB_TC=106` the same runs had no retransmissions and held
 88-92 Gb/s; both PCIe paths of the port, marked, reached 174-182 Gb/s
 (2026-10-17).
 
+**Qualified here (2026-11-20/21, spark-eb1a, MikroTik CRS812-8DS-2DQ-2DDQ-RM /
+Marvell 98DX7335, RouterOS 7.25.1):** the symmetric recipe above measured
+end-to-end — hosts (`dcb dscp-prio 26:3`, PFC `3:on`, boot units) + switch
+(QoS profiles `roce` dscp 26→tc3 and `cnp` dscp 48→tc6, ECN on queue 3,
+strict queue 6, `trust-l3=trust`, PFC tc3, `egress-rate-queue3=0`,
+`l2mtu=9500`, activated by `qos-hw-offloading=yes`). Zero
+`roce_adp_retrans`/`out_of_sequence` across a gate + 131K + 524K prefill load
+(previously ~18k/~330k per node per week), prefill +5%, 12.6k-17.1k pauses
+absorbed per node with no storms. Two traps on this chip: the egress-rate
+shaper rejects >100G — use `0` (PFC arithmetic uses the PHY rate) — and never
+reset `advertise` on QSFP-DD breakout ports or the second 200G sub-port drops.
+Evidence and acceptance: `experiments/2026-11-21-switched-alignment`.
+
 ### One switch port, two device paths
 
 A host reaches its switch port through two HCA device nodes on the same physical

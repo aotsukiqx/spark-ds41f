@@ -12,6 +12,23 @@ with one patch, sparknet 0.5.0 and NCCL 2.30.7 with four patches. `--load-format
 empty `VLLM_PLUGINS` loads the checkpoint; every serving kernel is TileLang. The settings in
 force, the qualification arms and the per-shape references are in the tables below.
 
+## Site deployment: spark-eb1a runs ahead of the promoted release
+
+The spark-eb1a site (four Sparks through the MikroTik CRS812 switch) serves a
+**site stack newer than `spark-ds41f-1107`** under
+[`experiments/2026-11-12-site-spark-eb1a/profile.json`](../experiments/2026-11-12-site-spark-eb1a/profile.json):
+vLLM `6d66eed3` + CUTLASS/CuTe DSL 4.8.1 + TileLang `ac88f5bc` (wheel
+`0.1.15+snapshot.32a1488d…`) + **stock NCCL 2.32.6-1 (zero local patches)**,
+with the lossless RoCE fabric and `NCCL_BUFFSIZE=2 MiB` (recipe-promoted into
+`tp4-switched`, 2026-11-21). Each step was measured identical to or better
+than the promoted stack on this site ([A1](../experiments/2026-11-21-a1-stock-nccl/README.md),
+[A2](../experiments/2026-11-21-a2-tilelang-ac88f5b/README.md),
+[fabric](../experiments/2026-11-21-switched-alignment/README.md)). The single
+record of what runs there, its rollback images and its soak caveats is
+[`experiments/2026-11-21-site-state`](../experiments/2026-11-21-site-state/README.md).
+This is a deployment, not a promotion: the recipe's image, lock and baselines
+still name `spark-ds41f-1107` until the A3 release folds the site stack in.
+
 Before spark-ds41f-1107 production was **spark-ds41f-1030**, serving DeepSeek-V4.1-Flash-1017 at
 1,048,576 tokens on the `tp4-ring` shape (dgx1-dgx4). It was promoted 2026-10-30 as
 [`2026-10-30-spark-ds41f-1030`](../manifests/baselines/2026-10-30-spark-ds41f-1030.json)

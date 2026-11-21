@@ -43,6 +43,18 @@ FlashInfer 0.6.18.post1; only vLLM's two stable CUDA extensions are rebuilt for
 SM121 against CUTLASS v4.7.1. Canonical vLLM main is parked while the Local
 Inference Lab integration branch is the serving source.
 
+
+**The spark-eb1a site runs ahead of this chain** (since 2026-11-21, site
+deployment, not a promotion): its profile selects a candidate lock with vLLM
+`6d66eed3` (LIL head), CUTLASS/CuTe DSL 4.8.1, TileLang `ac88f5bc` (head) and
+**NCCL 2.32.6-1 with an empty series** — on the switched fabric every local
+NCCL patch is upstream-owned or switchless-gated. Candidate locks own their
+`source_manifest` and their patch-series files outright; sharing either with
+another arm corrupts build identities. A TileLang pin refresh re-keys the
+series' `0012` to the new pre-metadata tree (the wheel-version assert fails
+otherwise). Records: `experiments/2026-11-21-site-state`,
+`experiments/2026-11-21-a1-stock-nccl`, `experiments/2026-11-21-a2-tilelang-ac88f5b`.
+
 ## Source map
 
 | Lock key | Canonical upstream | Contribution fork | Purpose |
