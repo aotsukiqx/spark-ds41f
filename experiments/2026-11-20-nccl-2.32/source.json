@@ -148,10 +148,10 @@
   },
   "nccl": {
     "base_revision": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
-    "patch_series": "experiments/2026-11-20-nccl-2.32/nccl/series",
-    "patchset_sha256": "ed53f784e97fc0d1318783835a5b27979e8c281372dd56d6655c5ab3f70fe5f6",
-    "patch_head": "266bbcbfeacabf51951f35cc24a7e1e894b5f991",
-    "expected_tree": "fd7f2d688e37b7401c38c08016a10041b46bd206",
+    "patch_series": "experiments/2026-11-21-a1-stock-nccl/nccl/series",
+    "patchset_sha256": "beb87fd297a0aadaf3ceddfb714e5a1d539a4e7f74eb37bc51fcba60c0673247",
+    "patch_head": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
+    "expected_tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
     "verification": "bin/spark3 build prepare applies the series to the pinned tag and checks this patch head and tree; image label local.spark3.nccl.tree matches, and the image build checks the installed libnccl.so.2 against the built one",
     "capabilities": [
       "switchless-bidirectional-ring"
