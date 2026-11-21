@@ -7,10 +7,10 @@
       "upstream": "https://github.com/local-inference-lab/vllm.git",
       "contribution_remote": "https://github.com/christopherowen/vllm.git",
       "tracking_ref": "refs/heads/integration/karmic-kraken-beta",
-      "revision": "19f2c20ed4d64ae22bd009ceacadd85e2a81e354",
-      "revision_url": "https://github.com/local-inference-lab/vllm/commit/19f2c20ed4d64ae22bd009ceacadd85e2a81e354",
-      "role": "serving source: Local Inference Lab's DS4.1 integration branch, used unchanged; canonical vllm-project/vllm main is parked",
-      "patch_series": "experiments/2026-10-26-spark-ds41f-candidate/1107/vllm/series",
+      "revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
+      "revision_url": "https://github.com/local-inference-lab/vllm/commit/6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
+      "role": "serving source (LIL integration branch, 6d66eed35b0a) with the production series plus the A3 retire-B12X tail: 648 active patches — the 641 of the 11-20 series (one upstream duplicate dropped, one rebased hunk, 0646 lifting cutlass-dsl to 4.8.1) and seven reworked retire patches 0700-0706 (packed BF16 head packs with TileLang, Engram geometry in-tree, MXFP4-CSF leaves the package, the b12x load format removed, the V4.1 cache layout named, the NVFP4 head switches' last comment, B12X's own tests skip without it); 0707/0708 are TODO- placeholders whose content the 1107 series already carries (rc17 0581/0582)",
+      "patch_series": "experiments/2026-11-21-a3-retire-b12x/vllm/series",
       "canonical_base": {
         "upstream": "https://github.com/vllm-project/vllm.git",
         "revision": "0f8fa53acf43a9a6a7a1f7e6b196950c78cd6d7a"
@@ -24,26 +24,15 @@
       "recorded_base_digest": "sha256:3cf14c52765a0f0c2f09035e05fa79e1e4b2f9788b64afa90fa41c1ff12d29cf",
       "role": "CUDA 13.0.2 and vLLM runtime base"
     },
-    "b12x": {
-      "kind": "git",
-      "upstream": "https://github.com/local-inference-lab/b12x.git",
-      "contribution_remote": null,
-      "tracking_ref": "refs/heads/integration/karmic-kraken-beta",
-      "revision": "236ddff04a5f5064084b46464800b70b34ec7d8c",
-      "revision_url": "https://github.com/local-inference-lab/b12x/commit/236ddff04a5f5064084b46464800b70b34ec7d8c",
-      "applied_upstream_commits": [],
-      "role": "modules vLLM still imports (the DS4.1 Engram module's preparation types among them); candidate 7 loads with --load-format direct (vLLM 0499, B12X's bounce-mode loader ported into vLLM), so B12X's own loader is not used, and no B12X kernel runs in serving. The repository is archived and continues in FlashInfer (flashinfer/experimental/b12x), and this is its last commit",
-      "patch_series": "experiments/2026-10-08-lil-rebase/b12x/series"
-    },
     "nccl": {
       "kind": "git",
       "upstream": "https://github.com/NVIDIA/nccl.git",
       "contribution_remote": null,
-      "tracking_ref": "refs/tags/v2.30.7-1",
-      "revision": "73cf112295c33aee2b895f329f592f2a9b4b0f97",
-      "revision_url": "https://github.com/NVIDIA/nccl/commit/73cf112295c33aee2b895f329f592f2a9b4b0f97",
-      "role": "NCCL 2.30.7, the runtime base image's version, rebuilt for SM121 with the IB send-path fence fix; replaces the nvidia-nccl-cu13 wheel's libnccl.so.2",
-      "patch_series": "experiments/2026-10-03-balanced-policy/nccl-adaptive/series"
+      "tracking_ref": "refs/tags/v2.32.6-1",
+      "revision": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
+      "revision_url": "https://github.com/NVIDIA/nccl/commit/ad2d192c1f279aefcaf340f67e07880b65a1116b",
+      "role": "NCCL v2.32.6-1 rebuilt for SM121 with an empty series: on the switched fabric every local NCCL patch is dead weight (0001 is upstream at 2.32; 0002-0004 are gated on NCCL_SWITCHLESS_BIDIRECTIONAL, unset at this site). The switchless shapes keep patches/nccl until 0003/0004 are re-expressed in 2.32's src/tuning/",
+      "patch_series": "experiments/2026-11-21-a1-stock-nccl/nccl/series"
     },
     "flashinfer": {
       "kind": "git",
@@ -60,17 +49,17 @@
       "upstream": "https://github.com/NVIDIA/cutlass.git",
       "contribution_remote": null,
       "tracking_ref": "refs/heads/main",
-      "revision": "cb4247394dd82148787aed73e5dc7cef33cbf862",
-      "revision_url": "https://github.com/NVIDIA/cutlass/commit/cb4247394dd82148787aed73e5dc7cef33cbf862",
-      "release_tag": "v4.7.1",
+      "revision": "2c85f497547eb441f0fe80bfb0fb2e6f9add1719",
+      "revision_url": "https://github.com/NVIDIA/cutlass/commit/2c85f497547eb441f0fe80bfb0fb2e6f9add1719",
+      "release_tag": "v4.8.1",
       "role": "CUTLASS headers for the SM121 _C_stable_libtorch and _moe_C_stable_libtorch rebuild"
     },
     "cutlass_dsl": {
       "kind": "pypi-wheel-set",
-      "upstream": "https://pypi.org/project/nvidia-cutlass-dsl/4.7.1/",
-      "version": "4.7.1",
-      "lockfile": "requirements/cutlass-dsl-aarch64.txt",
-      "role": "CuTe DSL compiler and CUDA 12/13 runtime libraries; required at 4.7.1 by vLLM and at >=4.7 by quack-kernels, used by B12X (pin moved by patch 0002), FlashInfer and the cuDNN frontend"
+      "upstream": "https://pypi.org/project/nvidia-cutlass-dsl/4.8.1/",
+      "version": "4.8.1",
+      "lockfile": "requirements/cutlass-dsl-4.8.1-aarch64.txt",
+      "role": "CuTe DSL compiler and CUDA 12/13 runtime libraries at 4.8.1, paired with the CUTLASS 4.8.1 headers; vLLM's exact ==4.7.1 is lifted by patch 0646 and every other consumer accepts 4.8.1"
     },
     "model": {
       "kind": "huggingface",
@@ -88,12 +77,12 @@
       "upstream": "https://github.com/tile-ai/tilelang.git",
       "contribution_remote": "https://github.com/christopherowen/tilelang.git",
       "tracking_ref": "refs/heads/main",
-      "revision": "2123e412ce2217b324c50c4ec967213906456ac5",
-      "revision_url": "https://github.com/tile-ai/tilelang/commit/2123e412ce2217b324c50c4ec967213906456ac5",
-      "version": "0.1.15+snapshot.35f15411cf3af0fc06a1cb0097215b1372a40464",
+      "revision": "ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
+      "revision_url": "https://github.com/tile-ai/tilelang/commit/ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
+      "version": "0.1.15+snapshot.32a1488d1c8f96521f6dc6d489735822179a683d",
       "submodules": true,
-      "role": "TileLang compiler refresh (2123e412ce22) with local SM120/SM121 features and correctness fixes (#875, #879-#883, C45 0001..0013)",
-      "patch_series": "experiments/2026-10-26-spark-ds41f-candidate/1107/tilelang/series"
+      "role": "TileLang pin refresh b1367a59 -> ac88f5bc (+2: 4ed9b9e keeps placeholder Var bindings across FFI serialization, which our in-process Layouts never exercise; ac88f5bc is docs). The SM120/SM121 series is unchanged except 0012 re-keyed to the new pre-metadata tree 32a1488d, so the wheel reports 0.1.15+snapshot.32a1488d and a fresh kernel-cache namespace appears",
+      "patch_series": "experiments/2026-11-21-a2-tilelang-ac88f5b/tilelang/series"
     },
     "tile_kernels": {
       "kind": "git",
@@ -417,5 +406,5 @@
       "role": "NVIDIA's CuTe DSL MegaMoE (also in FlashInfer moe_ep, NVFP4/MXFP8 expert-parallel MoE with communication fused) and TRT-LLM sparse attention; design reference only"
     }
   },
-  "source_manifest": "manifests/sources/2026-11-07-spark-ds41f-1107-source.json"
+  "source_manifest": "experiments/2026-11-21-a3-retire-b12x/source.json"
 }

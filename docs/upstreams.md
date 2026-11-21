@@ -103,25 +103,21 @@ pins an older version, patch the component's pin forward and qualify it rather
 than downgrading the others. The image build checks each consumer's declared
 requirement and fails on a mismatch.
 
-## Locks without B12X
+## Locks without B12X — done since spark-ds41f-1122
 
-From the release after next, the lock has no `b12x` entry: its vLLM series ports what
-serving still took from B12X (the direct loader, the packed BF16 head's packer, Engram's
-token map, geometry and caps, and a TileLang gather for resident Engram tables;
-[experiments/2026-10-26-retire-b12x](../experiments/2026-10-26-retire-b12x/README.md)).
-`bin/spark build` handles both kinds of lock:
+The promoted lock (2026-11-22) has no `b12x` entry: its vLLM series carries what
+serving still took from B12X (the direct loader, the packed BF16 head's in-tree
+TileLang packer, Engram's geometry in `vllm/models/deepseek_v4_1/common/engram_geometry.py`;
+the retirement itself is [experiments/2026-11-21-a3-retire-b12x](../experiments/2026-11-21-a3-retire-b12x/README.md)).
+`bin/spark build` prepares no B12X project or context for such a lock, builds the
+TileLang runtime on `runtime-core` (`TILELANG_BASE_STAGE`), records no B12X labels,
+and its image smoke checks that B12X is not installed (the running image reports
+`find_spec("b12x") is None`). The recipe loads with `--load-format direct` and an
+empty `VLLM_PLUGINS`.
 
-- A lock that lists `b12x` (spark-ds41f-1025 and earlier) builds exactly as before: the
-  same build directory, the `b12x-source` context, Dockerfile stage `runtime` (B12X on
-  `runtime-core`) under the TileLang runtime, and the `local.spark-ds41f.b12x.*` labels.
-- A lock without it prepares no B12X project or context, builds the TileLang runtime on
-  `runtime-core` (`TILELANG_BASE_STAGE`), records no B12X labels, and its image smoke
-  checks that B12X is not installed. Such a lock must list the TileLang sources.
-
-To make such a lock, drop `sources.b12x` from the candidate's lock (the source manifest's
-`b12x` record is then not read) and `local.spark-ds41f.b12x.tree` from its profile's
-`container.expected_labels`. The recipe loads with `--load-format direct` and an empty
-`VLLM_PLUGINS`.
+Locks that list `b12x` (spark-ds41f-1107 and earlier) still build exactly as
+before; the last such promoted lock is
+[`2026-11-07-spark-ds41f-1107`](../manifests/baselines/2026-11-07-spark-ds41f-1107.json).
 
 ## Contributing back
 

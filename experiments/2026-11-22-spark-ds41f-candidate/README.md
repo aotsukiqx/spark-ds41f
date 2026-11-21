@@ -1,8 +1,12 @@
 # Release candidate: fold the A3 site stack into the recipe
 
-Status: **assembled; qualification and the promotion commit are the owner's
-call**. Nothing here touches `config/cluster.json`, `upstreams.lock.json`,
-`patches/` or `manifests/`.
+Status: **superseded (switched-scope promotion, 2026-11-22)**. The owner scoped
+this fork to the switched environment only: the promotion executed from the A3
+switched lock directly (`manifests/baselines/2026-11-22-spark-ds41f-1122.json`)
+and the ring/triangle arms below were never run — the switchless shapes keep
+their 1107-era references and are not served or re-qualified by this fork. The
+arms remain valid qualification recipes if a switchless fleet is ever served
+again.
 
 ## What the candidate is
 

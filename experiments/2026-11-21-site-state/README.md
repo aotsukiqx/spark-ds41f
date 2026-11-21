@@ -1,18 +1,21 @@
-# spark-eb1a: current deployed state (2026-11-21)
+# spark-eb1a: current deployed state (2026-11-22)
 
 The single record of what production runs, how to restart it, and how to roll it
-back. The site profile (`experiments/2026-11-12-site-spark-eb1a/profile.json`)
-now names this stack, so a restart from the profile reproduces it instead of
-reverting to `spark-ds41f-1107`.
+back. Since the spark-ds41f-1122 promotion (2026-11-22) this is exactly the
+promoted release: the site profile
+(`experiments/2026-11-12-site-spark-eb1a/profile.json`) and the recipe
+(`config/cluster.json`) name the same image, environment and trees, so a
+restart from either reproduces production.
 
 ## Running
 
 | | |
 |---|---|
-| Image | `spark-ds41f:1107-tilelang-ac88f5b`, `sha256:39263b11edc0` |
-| Arm | the site profile itself; `experiments/2026-11-21-a2-tilelang-ac88f5b/arm-tp4-switched.json` reproduces it |
-| Lock | `experiments/2026-11-21-a2-tilelang-ac88f5b/upstreams.lock.json` |
-| Source trees | vllm `e5a1f99d`, tilelang `c3b54074`, nccl `331c032a` (**stock, zero patches**), tile_kernels `cb2fa41c`, sparknet `8cc28a5c`, b12x `04e0ee95` (retirement pending A3) |
+| Image | `spark-ds41f:a3-no-b12x-r5`, `sha256:e9a657c09426` |
+| Promotion | `manifests/baselines/2026-11-22-spark-ds41f-1122.json` (shape `tp4-switched`) |
+| Arm | the site profile itself; `experiments/2026-11-21-a3-retire-b12x/arm-tp4-switched.json` reproduces it |
+| Lock | `upstreams.lock.json` (promoted; equals `experiments/2026-11-21-a3-retire-b12x/upstreams.lock.json`) |
+| Source trees | vllm `51554e28` (650 patches, head `3d16a70c`), tilelang `c3b54074`, nccl `331c032a` (**stock, zero patches**), tile_kernels `cb2fa41c`, sparknet `8cc28a5c`, **b12x absent** |
 | Compiler | `tilelang 0.1.15+snapshot.32a1488d…`; cache namespace `…_32a1488d…` |
 | NCCL | 2.32.6-1 **stock**, `NCCL_BUFFSIZE=2 MiB` (recipe-promoted 2026-11-21), `NCCL_MAX_NCHANNELS=8`, `NCCL_PROTO=^LL128` |
 | Fabric | lossless since 2026-11-20: hosts mark (`NCCL_IB_TC=106`, renderer-owned) with `spark-ds41f-dcb.service` (dscp-prio 26:3, PFC 3:on) and the CRS812 QoS block; retrans/oos flat under load |
