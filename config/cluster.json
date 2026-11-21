@@ -270,7 +270,7 @@
       "benchmark_reference": "manifests/suites/2026-11-07-spark-ds41f-1107-tp4"
     },
     "tp4-switched": {
-      "notes": "Four nodes cabled through a switch (two ConnectX-7 paths per port); NCCL and one-shot settings are sparknet's oneshot-switched profile over tp4-ring's sizing.",
+      "notes": "Four nodes cabled through a switch (two ConnectX-7 paths per port); NCCL and one-shot settings are sparknet's oneshot-switched profile over tp4-ring's sizing. Its NCCL_BUFFSIZE is 2 MiB (owner, 2026-11-21): on the lossless switched fabric the 2 MiB buffer measured prefill +1.7-2.3% at 131K and +1.1-1.8% at 524K over 1 MiB across two boots, decode unchanged and zero retransmits (experiments/2026-11-21-switched-alignment, B2); tp5-8-switched inherit it unmeasured, as they inherited the 1 MiB value.",
       "extends": "tp4-ring",
       "engram_on_disk": true,
       "nodes_config": "config/nodes-switched.local.json",
@@ -279,7 +279,7 @@
         "topology": "switched"
       },
       "environment": {
-        "NCCL_BUFFSIZE": "1048576",
+        "NCCL_BUFFSIZE": "2097152",
         "NCCL_CUMEM_ENABLE": "0",
         "NCCL_MAX_NCHANNELS": "8",
         "SPARKNET_ROCE_ALLGATHER_MAX_BYTES": "4194304"
