@@ -90,10 +90,10 @@
       "tracking_ref": "refs/heads/main",
       "revision": "ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
       "revision_url": "https://github.com/tile-ai/tilelang/commit/ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
-      "version": "0.1.15+snapshot.auto",
+      "version": "0.1.15+snapshot.32a1488d1c8f96521f6dc6d489735822179a683d",
       "submodules": true,
-      "role": "TileLang pin refresh b1367a59 -> ac88f5bc (+2: 4ed9b9e keeps placeholder Var bindings across FFI serialization, which our in-process Layouts never exercise; ac88f5bc is docs). The 13-patch SM120/SM121 series is unchanged; prepare --lock fills the real snapshot version and tree",
-      "patch_series": "experiments/2026-11-19-tilelang-pin-refresh/tilelang/series"
+      "role": "TileLang pin refresh b1367a59 -> ac88f5bc (+2: 4ed9b9e keeps placeholder Var bindings across FFI serialization, which our in-process Layouts never exercise; ac88f5bc is docs). The SM120/SM121 series is unchanged except 0012 re-keyed to the new pre-metadata tree 32a1488d, so the wheel reports 0.1.15+snapshot.32a1488d and a fresh kernel-cache namespace appears",
+      "patch_series": "experiments/2026-11-21-a2-tilelang-ac88f5b/tilelang/series"
     },
     "tile_kernels": {
       "kind": "git",
