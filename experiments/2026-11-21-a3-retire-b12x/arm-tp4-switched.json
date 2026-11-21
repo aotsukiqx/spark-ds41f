@@ -7,7 +7,7 @@
     "container": {
       "image": "spark-ds41f:a3-no-b12x-r3",
       "expected_labels": {
-        "local.spark-ds41f.vllm.tree": "f75c6f4a7aeebab6e2a2962fb4a8cbc1ed982b9f",
+        "local.spark-ds41f.vllm.tree": "329650ee4345b52acb753e87b7f2c2fe380ae738",
         "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
         "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
         "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
