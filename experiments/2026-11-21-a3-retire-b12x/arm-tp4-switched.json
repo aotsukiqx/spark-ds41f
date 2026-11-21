@@ -5,7 +5,7 @@
   },
   "set": {
     "container": {
-      "image": "spark-ds41f:a3-no-b12x",
+      "image": "spark-ds41f:a3-no-b12x-r2",
       "expected_labels": {
         "local.spark-ds41f.vllm.tree": "49a952a6496b1612e7185b3075e29fdf07cd7406",
         "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
