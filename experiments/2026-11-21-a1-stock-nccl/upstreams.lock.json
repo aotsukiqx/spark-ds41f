@@ -417,5 +417,5 @@
       "role": "NVIDIA's CuTe DSL MegaMoE (also in FlashInfer moe_ep, NVFP4/MXFP8 expert-parallel MoE with communication fused) and TRT-LLM sparse attention; design reference only"
     }
   },
-  "source_manifest": "experiments/2026-11-20-nccl-2.32/source.json"
+  "source_manifest": "experiments/2026-11-21-a1-stock-nccl/source.json"
 }
