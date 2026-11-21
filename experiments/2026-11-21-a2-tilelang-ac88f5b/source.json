@@ -171,11 +171,11 @@
   },
   "deployment_artifacts": {},
   "tilelang": {
-    "base_revision": "b1367a59ce10ae4939d26821f4ed8a82457fb004",
+    "base_revision": "ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
     "patch_series": "experiments/2026-11-19-tilelang-pin-refresh/tilelang/series",
     "patchset_sha256": "5ee575a097f47263f42108709c8ffd7a717fa687f7d885b28ac8b868e0ab7862",
-    "patch_head": "65bb0b1e4cb66ca78681c7ce78bd684830d8d5b1",
-    "expected_tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
+    "patch_head": "186e403e477ca0475efdb698b3a8f77d63b20f9b",
+    "expected_tree": "5939dcdaf45f54c277064d54690788bffaf1ecf7",
     "submodules": {
       "3rdparty/cutlass": "b2dd65dc864e09688245b316ac46c4a6cd07e15c",
       "3rdparty/tvm": "0215a96cba91eabac903afa4ec1e42c99257e4c3",

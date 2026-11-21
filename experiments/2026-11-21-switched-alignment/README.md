@@ -143,6 +143,12 @@ prefill-only rerun from 66-67 °C completed with 6 °C of headroom left).
 ## Plan
 
 ### A. Alignment arms (one window, one variable each, two boots each)
+A3 preparation note (2026-11-21, read-only): the retire-B12X series
+(`experiments/2026-10-26-retire-b12x/vllm/0520-0528`) is **not** part of the
+current 641-patch series. Dry-applied in order onto the current prepared tree:
+4 apply clean, 4 need 3-way merges, and `0525` (the DSpark drafter's NVFP4 head
+switches) hard-conflicts — A3 is a real rebase (renumber to 0700+, resolve
+0525, drop `sources.b12x` and its label), not a same-day arm.
 
 1. **`A1` stock NCCL**: rebuild NCCL `v2.32.6-1` with an empty series for the
    site arm (upstream owns `0001`; the rest is gated off here). Gate: quality
