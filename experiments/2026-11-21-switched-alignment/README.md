@@ -150,15 +150,28 @@ current 641-patch series. Dry-applied in order onto the current prepared tree:
 switches) hard-conflicts — A3 is a real rebase (renumber to 0700+, resolve
 0525, drop `sources.b12x` and its label), not a same-day arm.
 
-1. **`A1` stock NCCL**: rebuild NCCL `v2.32.6-1` with an empty series for the
-   site arm (upstream owns `0001`; the rest is gated off here). Gate: quality
-   5/5, decode within the site reference, counter behaviour unchanged. Expected
-   verdict: identical; the win is the patch stack, not speed.
-2. **`A2` tilelang `b1367a59` → `ac88f5bc`**: unchanged 13-patch series; both new
-   commits classified NO-OP. Gate as above; keep the fresh cache namespace rule.
-3. Next release folds vLLM `6d66eed3` + CUTLASS 4.8.1 + TileLang (A2's pin) and
-   **drops B12X** per `docs/upstreams.md` ("Locks without B12X"); NCCL stays
-   `v2.30.7-1` for ring/triangle until `0003`/`0004` are re-expressed.
+**A3 is done** (2026-11-21, `experiments/2026-11-21-a3-retire-b12x`): the
+rebase ran, four runtime defects were fixed into the series across five build
+rounds, and `spark-ds41f:a3-no-b12x-r5` measures identical to A2 with B12X
+absent from the image, lock and labels. The site profile runs it; A2's image
+is the rollback.
+
+**The prefix-cache retention sweep is closed as a non-lever** (2026-11-22,
+read-only): `--prefix-cache-retention-interval` is consumed only by the
+KV-offloading connector scheduler
+(`vllm/distributed/kv_transfer/kv_connector/v1/offloading/scheduler.py:229`),
+which this recipe never configures; the knob is dead on our serving path. The
+67.8% live hit rate on 90-500K prompts is workload shape (unique long
+documents against an 11.5M-token pool), so the only real lever for the
+felt-slowness tail is client-side: keep per-conversation prefixes stable and
+within the pool's capacity, and let the prefix cache do its work.
+
+1. **`A1` stock NCCL** — done and adopted 2026-11-21 (`spark-ds41f:1107-nccl-2.32.6-stock`).
+2. **`A2` tilelang `b1367a59` → `ac88f5bc`** — done and adopted 2026-11-21 (`spark-ds41f:1107-tilelang-ac88f5b`).
+3. **`A3` retire B12X** — done and adopted 2026-11-21 (`spark-ds41f:a3-no-b12x-r5`).
+4. **Next release** folds the adopted site stack into the recipe (owner
+   decision; needs ring/triangle qualification); NCCL stays `2.30.7-1` for
+   ring/triangle until `0003`/`0004` are re-expressed in 2.32's `src/tuning/`.
 
 ### B. Switched-fabric optimization (site-only, after or beside A)
 
