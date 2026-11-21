@@ -1,4 +1,4 @@
-From b1dbe9bdb7ed1b38c5812f69222224158586594a Mon Sep 17 00:00:00 2001
+From d89d9bdbae04b0686777f5211cd3b1737a40c32f Mon Sep 17 00:00:00 2001
 From: aotsukiqx <y.aotsuki@gmail.com>
 Date: Sat, 21 Nov 2026 11:53:56 +0800
 Subject: [PATCH 2/9] 0701 [DS4.1] Engram's token map, geometry and caps in
@@ -8,10 +8,10 @@ Subject: [PATCH 2/9] 0701 [DS4.1] Engram's token map, geometry and caps in
  .../kernels/test_deepseek_v41_engram_rows.py  |  49 +++--
  tests/models/test_deepseek_v4_1_engram.py     | 132 ++++++-------
  tests/models/test_deepseek_v4_1_sp_prefill.py |   4 +-
- vllm/models/deepseek_v4_1/common/engram.py    |  14 +-
+ vllm/models/deepseek_v4_1/common/engram.py    |  19 +-
  .../deepseek_v4_1/common/engram_geometry.py   | 186 ++++++++++++++++++
  .../deepseek_v4_1/tilelang/engram_rows.py     |   4 +
- 6 files changed, 284 insertions(+), 105 deletions(-)
+ 6 files changed, 289 insertions(+), 105 deletions(-)
  create mode 100644 vllm/models/deepseek_v4_1/common/engram_geometry.py
 
 diff --git a/tests/kernels/test_deepseek_v41_engram_rows.py b/tests/kernels/test_deepseek_v41_engram_rows.py
@@ -405,10 +405,22 @@ index 248a5cfa5..084c7e314 100644
  
      monkeypatch.setattr(
 diff --git a/vllm/models/deepseek_v4_1/common/engram.py b/vllm/models/deepseek_v4_1/common/engram.py
-index 0ec6fbb99..473d84e53 100644
+index 0ec6fbb99..61f897a94 100644
 --- a/vllm/models/deepseek_v4_1/common/engram.py
 +++ b/vllm/models/deepseek_v4_1/common/engram.py
-@@ -41,9 +41,8 @@ class _PaddedColumnParallelLinear(ColumnParallelLinear):
+@@ -20,6 +20,11 @@ from vllm.logger import init_logger
+ from vllm.model_executor.layers.linear import ColumnParallelLinear, ReplicatedLinear
+ from vllm.model_executor.utils import set_weight_attrs
+ from vllm.model_executor.weight_transfer import copy_weight, get_file_tensor_source
++from vllm.models.deepseek_v4_1.common.engram_geometry import (
++    EngramCaps,
++    build_compressed_token_map,
++    build_geometry,
++)
+ from vllm.models.deepseek_v4_1.engram_rows import (
+     DEFAULT_CACHE_ROWS,
+     PACKED_ROW_BYTES,
+@@ -41,9 +46,8 @@ class _PaddedColumnParallelLinear(ColumnParallelLinear):
      The output is padded to a multiple of tp_size x 32 rows so every rank owns
      whole block-FP8 scale blocks. The last rank's missing checkpoint rows are
      zero-filled through the loader's existing ``allow_tp_padding`` path (a
@@ -420,7 +432,7 @@ index 0ec6fbb99..473d84e53 100644
      """
  
      def __init__(self, input_size, output_size, **kwargs):
-@@ -225,7 +224,7 @@ def _token_map(path, revision, trust_remote_code):
+@@ -225,7 +229,7 @@ def _token_map(path, revision, trust_remote_code):
      tokenizer = AutoTokenizer.from_pretrained(
          path, revision=revision, trust_remote_code=trust_remote_code
      )
@@ -429,7 +441,7 @@ index 0ec6fbb99..473d84e53 100644
  
  
  class EngramLayout:
-@@ -235,7 +234,7 @@ class EngramLayout:
+@@ -235,7 +239,7 @@ class EngramLayout:
          self.n_heads = config.engram_n_heads
          self.head_dim = config.engram_head_dim
          self.num_embeddings = tuple(config.engram_num_embeddings)
@@ -438,7 +450,7 @@ index 0ec6fbb99..473d84e53 100644
              layer_ids=self.layer_ids,
              base_table_size=config.engram_vocab_size,
              compressed_vocab_size=config.engram_compressed_vocab_size,
-@@ -270,7 +269,7 @@ class EngramLayout:
+@@ -270,7 +274,7 @@ class EngramLayout:
          self.token_map = token_map
          device = torch.device("cuda", torch.accelerator.current_device_index())
          self.caps = tuple(
@@ -447,7 +459,7 @@ index 0ec6fbb99..473d84e53 100644
                  device=device,
                  max_tokens=vc.scheduler_config.max_num_batched_tokens,
                  max_seqs=vc.scheduler_config.max_num_seqs,
-@@ -925,10 +924,9 @@ class Engram(nn.Module):
+@@ -925,10 +929,9 @@ class Engram(nn.Module):
          self.dim = config.hidden_size
          self.hc_mult = config.hc_mult
          self.eps = config.rms_norm_eps
