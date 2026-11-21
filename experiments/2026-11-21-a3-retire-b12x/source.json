@@ -3,11 +3,11 @@
   "captured_at": "2026-11-07",
   "vllm": {
     "base_revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
-    "patch_series": "experiments/2026-11-20-vllm-cutlass-bump/vllm/series",
-    "patchset_sha256": "7b1951888fd84101b97095bff81f0a134021f8aa23ae1b1c803d95bbd6d6cecf",
-    "expected_tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
+    "patch_series": "experiments/2026-11-21-a3-retire-b12x/vllm/series",
+    "patchset_sha256": "04fd96713eac05e9b3fe4c662ebcbed824f4f6bfbcde2d4ededa0cc28eaebb85",
+    "expected_tree": "706c241c5bce72af647e9c88e3df75245d8388d7",
     "verification": "bin/spark build prepare applies the series to the pinned revision and checks this patch head and tree; image label local.spark-ds41f.vllm.tree matches",
-    "patch_head": "ab513d36db47820bad9eaaa3160b0e44e4ac82e1",
+    "patch_head": "c8172992552a41652d81a27f7fd8654298fdeff1",
     "capabilities": [
       "packed-bf16-lm-head",
       "streamed-vocabulary-weights",
@@ -129,7 +129,7 @@
       "ds41-serving-contract",
       "startup-allocator-heap-flush"
     ],
-    "patch_count": 641
+    "patch_count": 648
   },
   "b12x": {
     "base_revision": "236ddff04a5f5064084b46464800b70b34ec7d8c",
