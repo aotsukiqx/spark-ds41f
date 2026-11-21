@@ -1,13 +1,12 @@
-From f14b4bafbca99728cb68ce2ec762c7bbf533bc55 Mon Sep 17 00:00:00 2001
+From dd3dbf9482b95feec2de594915f51b94a57440f9 Mon Sep 17 00:00:00 2001
 From: aotsukiqx <y.aotsuki@gmail.com>
-Date: Sat, 21 Nov 2026 11:28:25 +0800
+Date: Sat, 21 Nov 2026 11:53:56 +0800
 Subject: [PATCH 1/9] 0700 [DS4.1] The packed BF16 head packs with TileLang in
  vLLM; B12X's packed projection goes
 
 ---
  .../patches/flashkda-packed-checkpoints.patch | 593 ------------------
  .../patches/flashkda-sm120-cta-copy.patch     |  67 --
- cmake/patches/pytorch_stable_string.patch     |  15 -
  .../test_deepseek_v41_tilelang_vocab.py       | 164 ++++-
  ...test_deepseek_v4_1_prepared_projections.py |  83 +--
  tools/ep_kernels/elastic_ep/eep_nvshmem.patch |  92 ---
@@ -16,10 +15,9 @@ Subject: [PATCH 1/9] 0700 [DS4.1] The packed BF16 head packs with TileLang in
  .../layers/vocab_parallel_embedding.py        |  16 +-
  .../deepseek_v4_1/tilelang/vocab_pack.py      | 344 ++++++++++
  vllm/utils/b12x.py                            |   5 -
- 11 files changed, 537 insertions(+), 956 deletions(-)
+ 10 files changed, 537 insertions(+), 941 deletions(-)
  delete mode 100644 cmake/external_projects/patches/flashkda-packed-checkpoints.patch
  delete mode 100644 cmake/external_projects/patches/flashkda-sm120-cta-copy.patch
- delete mode 100644 cmake/patches/pytorch_stable_string.patch
  delete mode 100644 tools/ep_kernels/elastic_ep/eep_nvshmem.patch
  create mode 100644 vllm/models/deepseek_v4_1/tilelang/vocab_pack.py
 
@@ -695,27 +693,6 @@ index 89e5157a2..000000000
 -                 int32_t(CHUNK * CHUNK * sizeof(BF16)));
 - 
 -             ++load_write;
-diff --git a/cmake/patches/pytorch_stable_string.patch b/cmake/patches/pytorch_stable_string.patch
-deleted file mode 100644
-index bcb362857..000000000
---- a/cmake/patches/pytorch_stable_string.patch
-+++ /dev/null
-@@ -1,15 +0,0 @@
--diff --git a/torch/csrc/stable/stableivalue_conversions.h b/torch/csrc/stable/stableivalue_conversions.h
----- a/torch/csrc/stable/stableivalue_conversions.h
--+++ b/torch/csrc/stable/stableivalue_conversions.h
--@@ -807 +807 @@
---// Returns a new std::string; the string in val is deleted.
--+// Returns a std::string which owns its memory; the string in val is deleted.
--@@ -819 +819 @@
---    auto strptr = new std::string(data, length);
--+    const auto str = std::string(data, length);
--@@ -821 +821 @@
---    // delete the old string before returning new string
--+    // delete the old string
--@@ -823 +823 @@
---    return *strptr;
--+    return str;
 diff --git a/tests/kernels/quantization/test_deepseek_v41_tilelang_vocab.py b/tests/kernels/quantization/test_deepseek_v41_tilelang_vocab.py
 index de68bda33..ec7d492ef 100644
 --- a/tests/kernels/quantization/test_deepseek_v41_tilelang_vocab.py

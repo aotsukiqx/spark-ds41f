@@ -1,6 +1,6 @@
-From 3ee8cdcb75f9e7f57e97d165b427c9075b26726a Mon Sep 17 00:00:00 2001
+From b1dbe9bdb7ed1b38c5812f69222224158586594a Mon Sep 17 00:00:00 2001
 From: aotsukiqx <y.aotsuki@gmail.com>
-Date: Sat, 21 Nov 2026 11:28:25 +0800
+Date: Sat, 21 Nov 2026 11:53:56 +0800
 Subject: [PATCH 2/9] 0701 [DS4.1] Engram's token map, geometry and caps in
  vLLM; resident tables gather with TileLang
 
