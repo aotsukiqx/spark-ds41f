@@ -1,0 +1,10 @@
+From f385cd622f90f3208ded3aa174b985cc70581380 Mon Sep 17 00:00:00 2001
+From: aotsukiqx <y.aotsuki@gmail.com>
+Date: Sat, 21 Nov 2026 11:17:35 +0800
+Subject: [PATCH 9/9] 0708 [DS4.1] Tensor-parallelize the TileLang vision tower
+ and aligner across TP ranks
+
+Already present in this tree via the series' rc17 TP-vision patch (0582), since evolved by the row-parallel wo/w2 and rank_order_sum reduce work; the TP geometry, sharded projections, DP override and tests all exist, so this commit carries no diff.
+-- 
+2.51.2
+
