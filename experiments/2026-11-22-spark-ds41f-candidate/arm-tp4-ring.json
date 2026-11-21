@@ -1,0 +1,23 @@
+{
+  "notes": "Release-candidate arm for tp4-ring: the recipe's shape with the A3 stack (vLLM 6d66eed3 + retire-B12X series, CUTLASS/CuTe 4.8.1, TileLang ac88f5bc, recipe NCCL 2.30.7-1 + four patches, B12X absent). Qualification: full servebench release, single-stream and sampled suites against the recorded spark-ds41f-1107 tp4-ring references.",
+  "extends": {
+    "config": "config/cluster.json",
+    "shape": "tp4-ring"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:a3-candidate",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "prepare-fills",
+        "local.spark-ds41f.nccl.tree": "prepare-fills",
+        "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-22-spark-ds41f-candidate/upstreams.lock.json"
+  },
+  "unset": [
+    "container.expected_labels.local.spark-ds41f.b12x.tree"
+  ]
+}
