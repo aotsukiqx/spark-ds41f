@@ -1,4 +1,4 @@
-From c4d6f8eb7f8af51891069bc3af1a71b756fa420e Mon Sep 17 00:00:00 2001
+From 9bfb373865c6de032c387cb6e343f1bda5edad91 Mon Sep 17 00:00:00 2001
 From: aotsukiqx <y.aotsuki@gmail.com>
 Date: Sat, 21 Nov 2026 11:53:57 +0800
 Subject: [PATCH 4/9] 0703 Model loading: the b12x load format and its in-tree
