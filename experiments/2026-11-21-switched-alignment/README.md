@@ -109,6 +109,34 @@ Consequence for the plan: with the fabric now absorbing incast without loss,
 re-open **B2 (`NCCL_BUFFSIZE=2 MiB`)** — larger messages were exactly the
 regime the old fabric could not carry cleanly.
 
+## B2 (`NCCL_BUFFSIZE=2 MiB`): measured and adopted (2026-11-21)
+
+Env-only arm on the deployed stack ([arm-b2-buf2m.json](arm-b2-buf2m.json)),
+two boots. Boot 1 full load; boot 2's combined load tripped the bench's own
+thermal halt (spark-2fe7 GPU 79 °C within 5 °C of the limit — back-to-back
+heavy loads with `--cool-below 0` accumulate heat on this fanless-control
+site), so boot 2's prefill was rerun alone from a cooled state:
+
+| measure | B1 reference (1 MiB) | B2 boot 1 | B2 boot 2 |
+| --- | ---: | ---: | ---: |
+| prefill 131,072 | 8,519.2 ±0.3% | 8,661.1 ±0.4% | **8,716.2 ±0.6%** |
+| prefill 524,288 | 6,914.2 ±0.8% | 6,988.3 ±2.0% | **7,039.9 ±0.6%** |
+| `code-c1` / `prose-c1` step | 30.15 / 27.93 ms | 30.52 / 27.81 ms | 30.23 ms (in band) |
+| retrans / oos over the loads | +0/+0 | +0/+0 | +0/+0 |
+| quality | 5/5 | 5/5 | 5/5 (prefill-only rerun) |
+
+Both boots agree: prefill **+1.7-2.3% at 131K and +1.1-1.8% at 524K** with
+tight intervals, decode unchanged, the fabric stays at zero loss. **Adopted**:
+the site profile now sets `NCCL_BUFFSIZE=2097152`
+([profile](../2026-11-12-site-spark-eb1a/profile.json)); moving it into the
+recipe's `tp4-switched` shape is a promotion decision for the owner, and the
+ring/triangle shapes keep their own values until re-qualified. Receipts:
+`results/private/bench/2026-11-21-b2-buf2m-boot{1,2}/` and `-prefill/`.
+
+Operational note: on this site, leave several minutes between heavy bench loads
+or the thermal guard halts the run (it halted boot 2's combined pass; a
+prefill-only rerun from 66-67 °C completed with 6 °C of headroom left).
+
 ## Plan
 
 ### A. Alignment arms (one window, one variable each, two boots each)
