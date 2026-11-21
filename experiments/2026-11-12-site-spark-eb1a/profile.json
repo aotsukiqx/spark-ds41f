@@ -33,10 +33,7 @@
         "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
       }
     },
-    "upstreams_config": "experiments/2026-11-20-nccl-2.32/upstreams.lock.json",
-    "environment": {
-      "NCCL_BUFFSIZE": "2097152"
-    }
+    "upstreams_config": "experiments/2026-11-20-nccl-2.32/upstreams.lock.json"
   },
   "serve_options": {
     "--max-model-len": "716800"

@@ -127,10 +127,13 @@ site), so boot 2's prefill was rerun alone from a cooled state:
 
 Both boots agree: prefill **+1.7-2.3% at 131K and +1.1-1.8% at 524K** with
 tight intervals, decode unchanged, the fabric stays at zero loss. **Adopted**:
-the site profile now sets `NCCL_BUFFSIZE=2097152`
-([profile](../2026-11-12-site-spark-eb1a/profile.json)); moving it into the
-recipe's `tp4-switched` shape is a promotion decision for the owner, and the
-ring/triangle shapes keep their own values until re-qualified. Receipts:
+tight intervals, decode unchanged, the fabric stays at zero loss. **Adopted**,
+first in the site profile and then (owner, 2026-11-21) **promoted into the
+recipe**: `config/cluster.json`'s `tp4-switched.environment.NCCL_BUFFSIZE` is
+now `2097152` and the site profile no longer overrides it. The
+ring/triangle shapes keep their own values until re-qualified, and
+tp5-8-switched inherit the 2 MiB value unmeasured, as they inherited 1 MiB.
+Receipts:
 `results/private/bench/2026-11-21-b2-buf2m-boot{1,2}/` and `-prefill/`.
 
 Operational note: on this site, leave several minutes between heavy bench loads
