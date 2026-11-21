@@ -23,17 +23,16 @@
       "path": "{home}/nvmodels/spark-ds41f"
     },
     "container": {
-      "image": "spark-ds41f:1107-nccl-2.32.6-stock",
+      "image": "spark-ds41f:1107-tilelang-ac88f5b",
       "expected_labels": {
         "local.spark-ds41f.vllm.tree": "e5a1f99dd755a98dbe60a9e752f69ef064b56c04",
         "local.spark-ds41f.b12x.tree": "04e0ee957d6992e5c7c0896acd75b6a02b20b924",
         "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
-        "local.spark-ds41f.tilelang.tree": "fa23bcc84a7322e41eb339dcac776aeec248d44c",
-        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
         "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
       }
     },
-    "upstreams_config": "experiments/2026-11-21-a1-stock-nccl/upstreams.lock.json"
+    "upstreams_config": "experiments/2026-11-21-a2-tilelang-ac88f5b/upstreams.lock.json"
   },
   "serve_options": {
     "--max-model-len": "716800"
