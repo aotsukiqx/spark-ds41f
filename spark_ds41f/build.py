@@ -906,7 +906,7 @@ def prepare_project(directory: Path, name: str, record: dict) -> None:
         checked(["git", "switch", "--quiet", "--create", "spark/build", "FETCH_HEAD"], cwd=temporary)
         if record.get("patch_series"):
             series = ROOT / record["patch_series"]
-            for patch_name in read_series(series):
+            for patch_name in active_series_patches(series):
                 checked(
                     [
                         "git", "-c", f"user.name={PATCH_COMMITTER[0]}",
