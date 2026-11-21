@@ -182,7 +182,7 @@
 ../../2026-10-22-spark-ds41f-1022/vllm/0224-Tests-late-admission-with-sink-rejection-through-the.patch
 ../../2026-10-22-spark-ds41f-1022/vllm/0225-Tests-DS4.1-model-stubs-carry-the-sink-column-buffer.patch
 ../../2026-10-22-spark-ds41f-1022/vllm/0226-Late-admission-decide-the-step-after-a-continuing-pr.patch
-../../../2026-11-20-vllm-cutlass-bump/vllm/0227-DeepSeek-V4.1-encoding-control-token-spellings-in-re.patch
+../../2026-11-20-vllm-cutlass-bump/vllm/0227-DeepSeek-V4.1-encoding-control-token-spellings-in-re.patch
 ../../2026-10-25-spark-ds41f-candidate/vllm/0300-Speculative-decoding-refresh-random-draws-across-blo.patch
 ../../2026-10-25-spark-ds41f-candidate/vllm/0301-TileLang-CED-per-request-integer-row-limits-and-comp.patch
 ../../2026-10-25-spark-ds41f-candidate/vllm/0302-CED-metadata-paired-per-call-benchmark-at-serving-re.patch
@@ -639,7 +639,7 @@
 ../../2026-10-26-spark-ds41f-candidate/1107/vllm/0759-test-dsv41-align-release-gate-tests-with-1107-series.patch
 ../../2026-10-26-spark-ds41f-candidate/1107/vllm/0760-fix-dsv41-normalize-1-row-Engram-column-slice-stride.patch
 ../../2026-10-26-spark-ds41f-candidate/1107/vllm/0761-perf-worker-flush-allocator-and-host-heap-across-sta.patch
-../../../2026-11-20-vllm-cutlass-bump/vllm/0646-cu13-requirements-nvidia-cutlass-dsl-4.8.1.patch
+../../2026-11-20-vllm-cutlass-bump/vllm/0646-cu13-requirements-nvidia-cutlass-dsl-4.8.1.patch
 0700-DS4.1-The-packed-BF16-head-packs-with-TileLang-in-vL.patch
 0701-DS4.1-Engram-s-token-map-geometry-and-caps-in-vLLM-r.patch
 0702-DS4.1-MXFP4-CSF-leaves-the-DS4.1-package-Kimi-and-DS.patch
