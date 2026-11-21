@@ -4,10 +4,10 @@
   "vllm": {
     "base_revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
     "patch_series": "experiments/2026-11-21-a3-retire-b12x/vllm/series",
-    "patchset_sha256": "5336cc8da4537c0a7e5ab61cb85e2f270cc9d8fdab65e5fa5c99f64c64a3688d",
-    "expected_tree": "49a952a6496b1612e7185b3075e29fdf07cd7406",
+    "patchset_sha256": "139cc15e74c4878848dd6849a0147f8a23de19420c2eb52be40f539b4f4379e8",
+    "expected_tree": "f75c6f4a7aeebab6e2a2962fb4a8cbc1ed982b9f",
     "verification": "bin/spark build prepare applies the series to the pinned revision and checks this patch head and tree; image label local.spark-ds41f.vllm.tree matches",
-    "patch_head": "ab13380ed069e903f425964b1cdef3bebc8709e3",
+    "patch_head": "9c76bfb251cca2938b7debfdd497c83205437ed9",
     "capabilities": [
       "packed-bf16-lm-head",
       "streamed-vocabulary-weights",
