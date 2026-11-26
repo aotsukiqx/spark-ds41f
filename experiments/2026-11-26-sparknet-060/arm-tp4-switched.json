@@ -1,0 +1,19 @@
+{
+  "notes": "sparknet 0.6.0 arm: the 1122 site stack with only sources.sparknet advanced 1fd6a1fb (0.5.0) -> b01f350d (0.6.0). Kernel-side only; no vLLM call-site change. 0.6.0 chains the four one-shot collectives with programmatic dependent launch (T.pdl_sync() first statement), replaces the 0.5.0 single-slot cap and PyNCCL fallback for >256 KiB sequence-parallel prefill collectives with one persistent multi-stage pipelined kernel (8 CTAs = 2/20 GB10 SMs, SPARKNET_ROCE_STAGE_BYTES 4 MiB), and pins the RoCE proxy thread to a fast core within the cpuset (commits ca59c957, e2b41c65, fb609995; release b01f350d). The 0.6.0 P2P/PP transport is unused in TP serving. Part B (next_send_buffer zero-copy API) is deliberately not in 0.6.0.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1122-sparknet-060",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "51554e28f7a92e2f054760319e26cf574b915c15",
+        "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+        "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
+        "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+        "local.spark-ds41f.sparknet.tree": "1739407706277142da7a12c95fca3c503c8cb11c"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-26-sparknet-060/upstreams.lock.json"
+  }
+}
