@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "status": "promoted-baseline",
+  "captured_at": "20261126T160500Z",
+  "container_name": "spark-ds41f",
+  "shape": "tp4-switched",
+  "image_tag": "spark-ds41f:1127",
+  "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+  "nodes": {
+    "sparkeb1a": {
+      "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+      "role": "api-head-rank-0"
+    },
+    "spark-141e": {
+      "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+      "role": "headless-rank-1"
+    },
+    "spark-a89f": {
+      "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+      "role": "headless-rank-2"
+    },
+    "spark-2fe7": {
+      "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+      "role": "headless-rank-3"
+    }
+  },
+  "source_identity": {
+    "vllm_repository": "https://github.com/local-inference-lab/vllm",
+    "vllm_ref": "integration/karmic-kraken-beta",
+    "vllm_revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
+    "vllm_patch_head": "877782ab0652",
+    "vllm_patch_series": "experiments/2026-11-26-sparknet-060-cap/vllm/series",
+    "vllm_tree": "fb383429d1da95180c8068e1c954e809698c17ea",
+    "b12x": "absent (since spark-ds41f-1122)",
+    "nccl_repository": "https://github.com/NVIDIA/nccl",
+    "nccl_ref": "v2.32.6-1",
+    "nccl_revision": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
+    "nccl_patch_head": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
+    "nccl_patch_series": "experiments/2026-11-21-a1-stock-nccl/nccl/series",
+    "nccl_tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+    "tilelang_revision": "640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
+    "tilelang_patch_head": "bdd4cad90fd1c695578d5580c0f4b94e4dd2060f",
+    "tilelang_patch_series": "experiments/2026-11-26-sparknet-060-cap/tilelang/series",
+    "tilelang_version": "0.1.16+snapshot.c74164b94cbbc6ab8c83067852019c955092826d",
+    "tilelang_tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
+    "tile_kernels_revision": "c1cf914a82e6901c679445f872051ce44ac2cc63",
+    "tile_kernels_patch_head": "9040550b03aaba46835a46723190fa54a8e2632e",
+    "tile_kernels_patch_series": "experiments/2026-11-26-sparknet-060-cap/tile_kernels/series",
+    "tile_kernels_version": "2.1.0",
+    "tile_kernels_tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
+    "sparknet_revision": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
+    "sparknet_tree": "1739407706277142da7a12c95fca3c503c8cb11c",
+    "cutlass": "v4.8.1",
+    "cutlass_dsl": "4.8.1"
+  },
+  "runtime_choices": {
+    "kernel_backend": "TileLang only; B12X absent (since 1122); TileLang 0.1.16 stack unchanged from 1126",
+    "speculative": "DSpark, 5 tokens, draft TP equal to node count, greedy drafting with block verification (unchanged)",
+    "sparknet": "0.6.0 (b01f350d: PDL-chained one-shot kernels, multi-stage pipelined large collectives, pinned proxy) with vLLM series 0710 and SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 restoring the 0.5.0 single-slot eligibility boundary, so large SP prefill collectives keep the tuned PyNCCL path (NCCL_BUFFSIZE 2 MiB)",
+    "nccl": "stock 2.32.6-1, zero local patches; site environment NCCL_BUFFSIZE=2097152, NCCL_MAX_NCHANNELS=8, NCCL_CUMEM_ENABLE=0, NCCL_PROTO=^LL128 (unchanged)",
+    "fabric": "lossless switched: host DCB + CRS812 QoS (unchanged)"
+  },
+  "capacity": {
+    "tp4-switched": {
+      "kv_cache_tokens": 11485987,
+      "max_model_len": 716800,
+      "max_num_seqs": 16,
+      "kv_cache_memory_bytes": 11274289152,
+      "note": "unchanged from 1126"
+    }
+  },
+  "change_from_previous": "spark-ds41f-1126 plus one advance: sparknet 1fd6a1fb (0.5.0) -> b01f350d (0.6.0) with the one-shot eligibility cap (vLLM 0710, SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 at the switched shape's environment). Bare 0.6.0 measured a repeatable -3.0% prefill regression at 131K (multi-stage kernel displacing the tuned PyNCCL path); the cap recovers a third of it, and the capped arm holds decode parity (10/10 same both boots), identical temperature-0 determinism and quality 5/5 at a recorded, repeatable **-1.6% prefill at 131K** (8,459.7/8,461.1 vs the 1126 receipt's 8,594.8). Adopted on owner direction (2026-11-26) for upstream alignment with the residual attributed to 0.6.0's changed execution of <=4 MiB one-shot collectives; the code-level analysis and a proper fix are explicitly deferred to a post-window task.",
+  "evidence": {
+    "experiments": [
+      "experiments/2026-11-26-sparknet-060/",
+      "experiments/2026-11-26-sparknet-060-cap/"
+    ],
+    "summary": "sparknet-060 (bare 0.6.0): two boots, prefill 8,398.7/8,393.0 (-3.0%), decode parity - rejected. sparknet-060-cap: boot 1 uncapped by an arm env wiring mistake (receipts kept as the failure-mode evidence), boots 2-3 with the env delivered: prefill 8,459.7 +-0.1% / 8,461.1 +-0.4%, decode 10/10 same, determinism identical, quality 5/5. Receipt: boot 3's bench."
+  },
+  "build": {
+    "image": "spark-ds41f:1127",
+    "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
+    "build_host": "sparkeb1a",
+    "built_utc": "2026-11-26T15:20:00Z",
+    "built_as": "spark-ds41f:1126-sparknet-060-cap, retagged spark-ds41f:1127 (same digest; smokes: DS4.1 GPU import, TileLang 0.1.16+snapshot.c74164b9 import, sparknet ABI 10, B12X not installed)"
+  },
+  "benchmark_reference": "manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json",
+  "recipe": "config/cluster.json (this commit)",
+  "qualified_arms": {
+    "tp4-switched": "experiments/2026-11-26-sparknet-060-cap/arm-tp4-switched.json"
+  },
+  "previous_baseline": "2026-11-26-spark-ds41f-1126",
+  "hosts": {
+    "os": "DGX Spark 26.09.2 (dgx-spark-ota-update-meta)",
+    "kernel": "7.0.0-1019-nvidia",
+    "nvidia_driver": "580.178.04",
+    "page_size": 4096,
+    "known_deviation": "nvidia-drm fbdev=N on all four nodes (pre-existing since before 1122; owner-scheduled reboot fixes it in this window's final step)"
+  }
+}

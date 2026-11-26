@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_from_baseline": "2026-11-26-spark-ds41f-1126",
+  "generated_from_baseline": "2026-11-27-spark-ds41f-1127",
   "sources": {
     "vllm": {
       "kind": "git",
@@ -10,7 +10,7 @@
       "revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
       "revision_url": "https://github.com/local-inference-lab/vllm/commit/6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
       "role": "serving source (LIL integration branch, 6d66eed35b0a) with the production series plus the A3 retire-B12X tail: 648 active patches — the 641 of the 11-20 series (one upstream duplicate dropped, one rebased hunk, 0646 lifting cutlass-dsl to 4.8.1) and seven reworked retire patches 0700-0706 (packed BF16 head packs with TileLang, Engram geometry in-tree, MXFP4-CSF leaves the package, the b12x load format removed, the V4.1 cache layout named, the NVFP4 head switches' last comment, B12X's own tests skip without it); 0707/0708 are TODO- placeholders whose content the 1107 series already carries (rc17 0581/0582)",
-      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/vllm/series",
+      "patch_series": "experiments/2026-11-26-sparknet-060-cap/vllm/series",
       "canonical_base": {
         "upstream": "https://github.com/vllm-project/vllm.git",
         "revision": "0f8fa53acf43a9a6a7a1f7e6b196950c78cd6d7a"
@@ -83,7 +83,7 @@
       "version": "0.1.16+snapshot.c74164b94cbbc6ab8c83067852019c955092826d",
       "submodules": true,
       "role": "TileLang ac88f5bc -> 640fdcae (0.1.16 cut): parallel JIT, toolchain-versioned cache keys, group-readable shared entries, TVM/Z3 solver soundness. 0003/0007/0011 reworked onto the parallel-compilation rewrite, 0012 re-keyed to pre-metadata tree c74164b9; 0709 in the vLLM series lifts the requirements floor to ==0.1.16",
-      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tilelang/series"
+      "patch_series": "experiments/2026-11-26-sparknet-060-cap/tilelang/series"
     },
     "tile_kernels": {
       "kind": "git",
@@ -94,17 +94,17 @@
       "revision_url": "https://github.com/deepseek-ai/TileKernels/commit/c1cf914a82e6901c679445f872051ce44ac2cc63",
       "version": "2.1.0",
       "role": "TileKernels 2.1.0 (count-clamp reduction rewrite, norm_forward reorganization, arithmetic FP4 e2m1 cast); serving imports it zero times - kernel-parity benchmarks only; 0001 carries forward byte-identical",
-      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tile_kernels/series"
+      "patch_series": "experiments/2026-11-26-sparknet-060-cap/tile_kernels/series"
     },
     "sparknet": {
       "kind": "git",
       "upstream": "https://github.com/christopherowen/dgx-spark-networking.git",
       "contribution_remote": null,
       "tracking_ref": "refs/heads/main",
-      "revision": "1fd6a1fbd8dc4884057046d1ebd93d585c9e4bcf",
-      "revision_url": "https://github.com/christopherowen/dgx-spark-networking/commit/1fd6a1fbd8dc4884057046d1ebd93d585c9e4bcf",
-      "version": "0.5.0",
-      "role": "sparknet: one-shot RoCE collectives (TileLang kernels only, timed waits that stop the GPU, API 2) and fabric profiles, for the TileLang family's TP collectives; release 0.5.0 plus single-slot transfer cap (<= _slot_bytes) so large SP prefill chunks use PyNCCL"
+      "revision": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
+      "revision_url": "https://github.com/christopherowen/dgx-spark-networking/commit/b01f350d061a6434c2186df73fa568ab4a9e4aa0",
+      "version": "0.6.0",
+      "role": "sparknet 0.6.0 (PDL-chained one-shot kernels, multi-stage pipelined large collectives, pinned proxy) with SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 (vLLM 0710) restoring the 0.5.0 single-slot eligibility boundary so large SP prefill collectives keep the tuned PyNCCL path; a recorded -1.6% prefill residual at 131K is attributed to the 0.6.0 execution of <=4 MiB one-shot collectives, analysis deferred (owner, 2026-11-26)"
     }
   },
   "references": {
@@ -407,5 +407,5 @@
       "role": "NVIDIA's CuTe DSL MegaMoE (also in FlashInfer moe_ep, NVFP4/MXFP8 expert-parallel MoE with communication fused) and TRT-LLM sparse attention; design reference only"
     }
   },
-  "source_manifest": "experiments/2026-11-26-spark-ds41f-1126/source.json"
+  "source_manifest": "experiments/2026-11-26-sparknet-060-cap/source.json"
 }

@@ -23,12 +23,12 @@
       "path": "{home}/nvmodels/spark-ds41f"
     },
     "container": {
-      "image": "spark-ds41f:1126",
+      "image": "spark-ds41f:1127",
       "expected_labels": {
-        "local.spark-ds41f.vllm.tree": "9c20f2003ed245793a333d37687a91d3a9cab91d",
+        "local.spark-ds41f.vllm.tree": "fb383429d1da95180c8068e1c954e809698c17ea",
         "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
         "local.spark-ds41f.tilelang.tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
-        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0",
+        "local.spark-ds41f.sparknet.tree": "1739407706277142da7a12c95fca3c503c8cb11c",
         "local.spark-ds41f.tile_kernels.tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e"
       }
     },
@@ -40,5 +40,5 @@
   "unset": [
     "glp"
   ],
-  "notes": "spark-eb1a site deployment. Since 2026-11-26 it runs spark-ds41f:1126 (TileLang 640fdcae / wheel 0.1.16+snapshot.c74164b9 with the reworked 0003/0007/0011 and re-keyed 0012, TileKernels 2.1.0 with 0001, vLLM 6d66eed3 + the 1126 series incl. 0709; NCCL stock 2.32.6-1, sparknet 1fd6a1fb, CUTLASS 4.8.1) at the unchanged shape: four nodes through the 200 GbE lossless CRS812 fabric, stock 4 KiB kernel, no memory saver, 716,800-token requests, 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool with NCCL_BUFFSIZE 2 MiB. Promoted as spark-ds41f-1126; the root upstreams.lock.json is this stack. The GLP-steered name stays unset (HF_HUB_OFFLINE)."
+  "notes": "spark-eb1a site deployment. Since 2026-11-26 (late) it runs spark-ds41f:1127: the 1126 stack plus sparknet 0.6.0 (b01f350d) with the one-shot eligibility cap (vLLM 0710, SPARK_DS41F_ONESHOT_MAX_BYTES=4194304) - large SP prefill collectives keep the tuned PyNCCL path; recorded -1.6% prefill residual at 131K with the code analysis deferred by the owner. Same shape and fabric as 1126: 716,800-token requests, 16 sequences, 16,384-token budget, 10.5 GiB KV, NCCL_BUFFSIZE 2 MiB. The GLP-steered name stays unset (HF_HUB_OFFLINE)."
 }

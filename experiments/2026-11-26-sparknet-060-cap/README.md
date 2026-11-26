@@ -27,11 +27,33 @@ owner to after the window (recorded in the window summary).
 
 ## Method
 
-`build prepare --lock` → `build check` → `build image --apply` →
-`build distribute --apply`; two clean boots with the determinism gate and the
-`quality,decode,prefill` gate vs
-`manifests/benchmarks/2026-11-26-spark-ds41f-1126-switched.json`.
+`build prepare --lock` → `build check` → `build image --apply` → `build
+distribute --apply`; clean boots with the determinism gate and the
+`quality,decode,prefill` gate vs the 1126 receipt.
 
 ## Results
 
-(to be filled)
+| measure | 1126 reference | boot 1 (env NOT delivered) | boot 2 (capped) | boot 3 (capped) |
+|---|---:|---:|---:|---:|
+| quality | 5/5 | 5/5 | 5/5 | 5/5 |
+| temp-0 determinism | — | identical | identical | — |
+| decode grid | — | 10/10 same | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,594.8 | 8,390.6 ±0.2% (bare 0.6.0 level) | **8,459.7 ±0.1%** | **8,461.1 ±0.4%** |
+
+Boot 1 exposed an arm-wiring failure kept as evidence: `set.shapes.*
+.environment` is not a key the renderer merges (candidate.py's own arms set
+`environment` at the top level), so the cap never reached the container and
+the boot measured bare 0.6.0 again (8,390.6). With the env delivered
+(verified in `docker inspect`), the cap recovers a third of the regression
+and the two capped boots agree tightly at **-1.6% vs the 1126 receipt**
+(8,459.7/8,461.1 vs 8,594.8): the boundary restoration works (large SP
+collectives are back on the tuned PyNCCL path), and the residual is
+attributable to 0.6.0's changed execution of the <=4 MiB one-shot
+collectives themselves.
+
+**Verdict: qualified and promoted as spark-ds41f-1127** on owner direction
+(upstream alignment), carrying the recorded -1.6% prefill residual with the
+code-level analysis and a proper fix explicitly deferred to a post-window
+task. Receipt: boot 3's bench →
+`manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json`.
+Receipts: `runs/b1` (uncapped evidence), `runs/b2`, `runs/b3`.
