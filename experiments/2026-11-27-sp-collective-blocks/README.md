@@ -24,12 +24,33 @@ dispatch.
 Stop production; boot the arm (`--unqualified-shape`); verify the env reached
 the container before measuring; determinism gate + the
 `quality,decode,prefill` gate vs
-`manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json`; second
-clean boot, repeat. Acceptance: prefill 131K >= 8,594.8 (residual recovered;
-the persistent kernel may beat 0.5.0 by avoiding the old multi-launch yield
-stalls), decode 10/10 same, determinism identical, quality 5/5. Explicit
-risk gate: the 150-375 µs overlap-stall the cap was designed to prevent.
+`manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json`; the
+determinism failure on boot 1 ends the arm before its second boot. Risk
+watched: the 150-375 µs overlap-stall the cap was designed to prevent
+(decode-adjacent points stayed inside their intervals).
 
-## Results
+## Results (single boot; the gate verdict ends the arm)
 
-(to be filled)
+| measure | 1127 reference | boot 1 (COLLECTIVE_BLOCKS=0) |
+|---|---:|---:|
+| prefill 131,072 (cooled) | 8,461.1 | **8,625.7 ±0.1% (+1.9%, faster)** |
+| decode grid | — | 10/10 same |
+| quality | 5/5 | 5/5 |
+| temp-0 determinism | identical | **failed: 1-2 token / 1-3 logprob diffs in every scenario** |
+
+The mechanism is confirmed exactly as analyzed: full-width collectives
+(64 CTAs) recover the whole -1.6% residual and land +0.4% above the 1126
+level (8,625.7 vs 8,594.8) — the persistent kernel beats 0.5.0's
+multi-launch layout once it is not starved at 8 CTAs. But the wider grid
+changes the kernel's floating-point reduction order, and the
+temperature-0 outputs move (1-2 tokens of 192 in every scenario; hashes
+differ from the production stack). That fails the determinism gate by
+construction: any width other than 8 changes the order the same way.
+
+**Verdict: not adopted; the headroom is proven and claimed differently.**
+Production stays on 1127. The +1.9% prefill at 131K is real and repeatable
+(±0.1%), and taking it needs an order-preserving widening of the multi-stage
+kernel's reduction (a deterministic reduction tree independent of the CTA
+count) — an upstream sparknet change, and a natural contribution-back
+candidate alongside the deferred code analysis. Receipts: `runs/b1`
+(including the determinism failure record).
