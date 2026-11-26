@@ -24,12 +24,23 @@ promotion's benchmark receipt:
 
 ## Method
 
-`build prepare --lock` → `build check` → `build image --apply` →
-`build distribute --apply`; stop production; two clean boots with the
-determinism gate and the `quality,decode,prefill` gate vs
-`manifests/benchmarks/2026-11-22-spark-ds41f-1122-switched.json`; the better
-boot's bench becomes `manifests/benchmarks/2026-11-26-spark-ds41f-1126-switched.json`.
+`build prepare --lock` → `build check` → `build image --apply` → `build
+distribute --apply`; stop production; two clean boots with the determinism gate
+and the `quality,decode,prefill` gate vs the 1122 reference.
 
-## Results
+## Results (two clean boots, 2026-11-26)
 
-(to be filled)
+| measure | 1122 reference | boot 1 | boot 2 |
+|---|---:|---:|---:|
+| quality | 5/5 | 5/5 | 5/5 |
+| temp-0 determinism | — | identical, 0/0, hashes equal to the production stack | — |
+| decode c1 step (prose/code) | 27.93 / 30.21 ms | 28.40 / 31.07 | 28.16 / 30.86 |
+| decode grid | — | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,648 (1122 receipt) | 8,572.3 ±0.1% | 8,594.8 ±0.1% |
+| boot to API | — | +112.8 s (namespace warm) | +109.0 s |
+
+**Verdict: qualified and promoted as spark-ds41f-1126.** The combination
+holds every gate its single-variable arms held (decode parity, determinism
+hashes equal to the production stack, quality 5/5, prefill at the day's
+production level). Receipt: boot 2's bench, copied to
+`manifests/benchmarks/2026-11-26-spark-ds41f-1126-switched.json`.

@@ -1,15 +1,17 @@
 # Current state
 
-Production is **spark-ds41f-1122** ([config/cluster.json](../config/cluster.json)),
-the switched-site promotion of 2026-11-22, serving DeepSeek-V4.1-Flash-1017 at
-1,048,576 tokens on the `tp4-switched` shape (spark-eb1a: sparkeb1a, spark-141e,
+Production is **spark-ds41f-1126** ([config/cluster.json](../config/cluster.json)),
+the switched-site promotion of 2026-11-26, serving DeepSeek-V4.1-Flash-1017 at
+716,800 tokens on the `tp4-switched` shape (spark-eb1a: sparkeb1a, spark-141e,
 spark-a89f, spark-2fe7). It was promoted as
-[`2026-11-22-spark-ds41f-1122`](../manifests/baselines/2026-11-22-spark-ds41f-1122.json):
-image `spark-ds41f:a3-no-b12x-r5` (`sha256:e9a657c09426`, built as the A3
-round-5 image), one digest on all ranks, built by `bin/spark build` from Local
-Inference Lab's vLLM `6d66eed3` with 650 patches (patch head `3d16a70c`, tree
-`51554e28`, **no B12X anywhere**), TileLang `ac88f5bc` with 13 SM120/SM121
-patches (wheel `0.1.15+snapshot.32a1488d…`), TileKernels 2.0.0 with one patch,
+[`2026-11-26-spark-ds41f-1126`](../manifests/baselines/2026-11-26-spark-ds41f-1126.json):
+image `spark-ds41f:1126` (`sha256:762e12914579`), one digest on all ranks,
+built by `bin/spark build` from Local Inference Lab's vLLM `6d66eed3` with
+651 patches (patch head `2d688bf3`, tree `9c20f200`, **no B12X anywhere**),
+TileLang `640fdcae` with 13 SM120/SM121 patches (wheel
+`0.1.16+snapshot.c74164b9…`; 0003/0007/0011 reworked onto the 0.1.16
+parallel-compilation rewrite, 0012 re-keyed, 0709 lifts vLLM's requirements
+floor), TileKernels 2.1.0 with one patch (serving imports it zero times),
 sparknet 0.5.0 and **stock NCCL 2.32.6-1 (zero local patches)**.
 `--load-format direct` with an empty `VLLM_PLUGINS` loads the checkpoint; every
 serving kernel is TileLang; the fabric is lossless (host DCB PFC + CRS812 QoS,
@@ -34,7 +36,11 @@ caveats is
 the promotion's live verification is
 [`experiments/2026-11-22-site-perf-verify`](../experiments/2026-11-22-site-perf-verify/README.md).
 
-Before spark-ds41f-1122 production was **spark-ds41f-1107**, promoted 2026-11-07
+Before spark-ds41f-1126 production was **spark-ds41f-1122**, promoted 2026-11-22
+([baseline](../manifests/baselines/2026-11-22-spark-ds41f-1122.json)):
+image `spark-ds41f:a3-no-b12x-r5` — vLLM `6d66eed3` + 650 patches, TileLang
+`ac88f5bc`, TileKernels 2.0.0, stock NCCL 2.32.6-1. Before that was
+**spark-ds41f-1107**, promoted 2026-11-07
 ([baseline](../manifests/baselines/2026-11-07-spark-ds41f-1107.json),
 [release record](../experiments/2026-10-26-spark-ds41f-candidate/1107/README.md)):
 image `spark-ds41f:1107` (`sha256:3f32a962ce04`) on the `tp4-ring` shape —
@@ -302,14 +308,14 @@ rollback.
 <!-- BEGIN GENERATED: active-settings -->
 | Setting | Active value |
 | --- | --- |
-| Promoted baseline | `2026-11-07-spark-ds41f-1107` (`spark-ds41f-1107`, frozen in `releases/spark-ds41f-1107/`); default shape `tp4-ring` |
-| Served models | `deepseek-v4.1-flash` (`deepseek-ai/DeepSeek-V4.1-Flash-1017`, revision `1bae0e10`) and per-request GLP-steered `deepseek-v4.1-flash-weightless` (`msuiche/DeepSeek-V4.1-Flash-1017-abliterated-cyber-GLP-39-L1-39-a0.75`, revision `2715ffd5`) |
-| Kernel backend | TileLang only (`kernel_backend: tilelang`, vLLM 0493-0496): TileLang 0.1.15+snapshot.35f15411cf3af0fc06a1cb0097215b1372a40464 (`e2b00182`), DeepSeek TileKernels 2.0.0 (`cb2fa41c`), sparknet 0.5.0 (`8cc28a5c`) one-shot RoCE collectives; every serving kernel is TileLang including the vision tower, CED row selection, RoPE, compressor, KV writers, Engram gate/hash/gather, sparse MLA, WO projection, drafter context-KV, sampling and block verification |
-| Sources | Local Inference Lab `integration/karmic-kraken-beta` vLLM `19f2c20e` + `experiments/2026-10-26-spark-ds41f-candidate/1107/vllm/series` (641 patches, patch head `2756478b`, tree `ed1bdb7a`), TileLang 0.1.15+snapshot.35f15411cf3af0fc06a1cb0097215b1372a40464 (13 patches), TileKernels 2.0.0 (1 patch), sparknet 0.5.0, NCCL 2.30.7 (4 patches, tree `6af10aa7`); direct checkpoint loader (`--load-format direct`, vLLM 0499, `VLLM_PLUGINS` empty) |
-| Image | `spark-ds41f:1107` (built as `spark-ds41f:1107`, `sha256:3f32a962ce04`), one digest on all ranks, built by `bin/spark build` |
+| Promoted baseline | `2026-11-26-spark-ds41f-1126` (`spark-ds41f-1126`, frozen in `releases/spark-ds41f-1126/`); default shape `tp4-ring` |
+| Served models | `deepseek-v4.1-flash` (`deepseek-ai/DeepSeek-V4.1-Flash-1017`, revision ``) and per-request GLP-steered `deepseek-v4.1-flash-weightless` (`msuiche/DeepSeek-V4.1-Flash-1017-abliterated-cyber-GLP-39-L1-39-a0.75`, revision `2715ffd5`) |
+| Kernel backend | TileLang only (`kernel_backend: tilelang`, vLLM 0493-0496): TileLang 0.1.16+snapshot.c74164b94cbbc6ab8c83067852019c955092826d (`85daad43`), DeepSeek TileKernels 2.1.0 (`8386508b`), sparknet 0.5.0 (`8cc28a5c`) one-shot RoCE collectives; every serving kernel is TileLang including the vision tower, CED row selection, RoPE, compressor, KV writers, Engram gate/hash/gather, sparse MLA, WO projection, drafter context-KV, sampling and block verification |
+| Sources | Local Inference Lab `integration/karmic-kraken-beta` vLLM `6d66eed3` + `experiments/2026-11-26-spark-ds41f-1126/vllm/series` (651 patches, patch head `2d688bf3`, tree `9c20f200`), TileLang 0.1.16+snapshot.c74164b94cbbc6ab8c83067852019c955092826d (13 patches), TileKernels 2.1.0 (1 patch), sparknet 0.5.0, NCCL 2.32.6-1 (0 patches, tree `331c032a`); direct checkpoint loader (`--load-format direct`, vLLM 0499, `VLLM_PLUGINS` empty) |
+| Image | `spark-ds41f:1126` (built as `spark-ds41f:1126 (the combined release arm; smokes: DS4.1 GPU import, TileLang 0.1.16+snapshot.c74164b9 import, sparknet ABI 10, B12X not installed)`, `sha256:762e12914579`), one digest on all ranks, built by `bin/spark build` |
 | Decode tiles & PDL | block-32 FP8 decode rows on 16-, 32- or 64-row tiles by row count and split-K tiles up to 128 rows for 16-stream steps, programmatic dependent launch (PDL) along the decode chain (vLLM 0520-0525), attention front in one launch (0543-0544), 64-row prefill MoE tiles and panel rasterization past L2 (0043) |
 | Batch invariance | temperature-0 outputs do not depend on the batch: rank-order FP32 reductions with one rounding, compressor projection one TileLang arithmetic at every row count, aligned prefill chunks (`--long-prefill-token-threshold` 16,288 on `tp4-ring`, 6,096 on `tp3-triangle`, 4,048 on `tp3-triangle-4k`), CED replays a prompt's last 128 rows wherever its chunks end (0526-0527), and mixed steps run sparse MLA per request |
-| Hosts | DGX Spark 26.09.2 (dgx-spark-ota-update-meta), kernel `7.0.0-1019-nvidia-64k with kho=off`, driver 580.178.04, `multi-user.target (no desktop)`, `--cpuset-cpus=5-9,15-19`, glibc malloc pinned (`MALLOC_ARENA_MAX=2`, `MALLOC_MMAP_THRESHOLD_=1048576`) |
+| Hosts | DGX Spark 26.09.2 (dgx-spark-ota-update-meta), kernel `7.0.0-1019-nvidia`, driver 580.178.04, `multi-user.target (no desktop)`, `--cpuset-cpus=5-9,15-19`, glibc malloc pinned (`MALLOC_ARENA_MAX=2`, `MALLOC_MMAP_THRESHOLD_=1048576`) |
 | Tensor parallel ranks & transport | `tp4-ring`: 4 ranks (`oneshot-ring4`); `tp3-triangle`: 3 ranks (`oneshot-direct`); `tp3-triangle-4k`: 3 ranks (`oneshot-direct`) |
 | Maximum model length | `tp4-ring` and `tp3-triangle`: 1,048,576 tokens; `tp3-triangle-4k`: 262,144 tokens |
 | Maximum sequences | `tp4-ring`: 16; `tp3-triangle` and `tp3-triangle-4k`: 8 |

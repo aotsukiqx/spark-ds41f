@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_from_baseline": "2026-11-22-spark-ds41f-1122",
+  "generated_from_baseline": "2026-11-26-spark-ds41f-1126",
   "sources": {
     "vllm": {
       "kind": "git",
@@ -10,7 +10,7 @@
       "revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
       "revision_url": "https://github.com/local-inference-lab/vllm/commit/6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
       "role": "serving source (LIL integration branch, 6d66eed35b0a) with the production series plus the A3 retire-B12X tail: 648 active patches — the 641 of the 11-20 series (one upstream duplicate dropped, one rebased hunk, 0646 lifting cutlass-dsl to 4.8.1) and seven reworked retire patches 0700-0706 (packed BF16 head packs with TileLang, Engram geometry in-tree, MXFP4-CSF leaves the package, the b12x load format removed, the V4.1 cache layout named, the NVFP4 head switches' last comment, B12X's own tests skip without it); 0707/0708 are TODO- placeholders whose content the 1107 series already carries (rc17 0581/0582)",
-      "patch_series": "experiments/2026-11-21-a3-retire-b12x/vllm/series",
+      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/vllm/series",
       "canonical_base": {
         "upstream": "https://github.com/vllm-project/vllm.git",
         "revision": "0f8fa53acf43a9a6a7a1f7e6b196950c78cd6d7a"
@@ -32,7 +32,8 @@
       "revision": "ad2d192c1f279aefcaf340f67e07880b65a1116b",
       "revision_url": "https://github.com/NVIDIA/nccl/commit/ad2d192c1f279aefcaf340f67e07880b65a1116b",
       "role": "NCCL v2.32.6-1 rebuilt for SM121 with an empty series: on the switched fabric every local NCCL patch is dead weight (0001 is upstream at 2.32; 0002-0004 are gated on NCCL_SWITCHLESS_BIDIRECTIONAL, unset at this site). The switchless shapes keep patches/nccl until 0003/0004 are re-expressed in 2.32's src/tuning/",
-      "patch_series": "experiments/2026-11-21-a1-stock-nccl/nccl/series"
+      "patch_series": "experiments/2026-11-21-a1-stock-nccl/nccl/series",
+      "version": "2.32.6-1"
     },
     "flashinfer": {
       "kind": "git",
@@ -77,23 +78,23 @@
       "upstream": "https://github.com/tile-ai/tilelang.git",
       "contribution_remote": "https://github.com/christopherowen/tilelang.git",
       "tracking_ref": "refs/heads/main",
-      "revision": "ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
-      "revision_url": "https://github.com/tile-ai/tilelang/commit/ac88f5bc482ccc9009ce2ca68e1e7e35cd9169ac",
-      "version": "0.1.15+snapshot.32a1488d1c8f96521f6dc6d489735822179a683d",
+      "revision": "640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
+      "revision_url": "https://github.com/tile-ai/tilelang/commit/640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
+      "version": "0.1.16+snapshot.c74164b94cbbc6ab8c83067852019c955092826d",
       "submodules": true,
-      "role": "TileLang pin refresh b1367a59 -> ac88f5bc (+2: 4ed9b9e keeps placeholder Var bindings across FFI serialization, which our in-process Layouts never exercise; ac88f5bc is docs). The SM120/SM121 series is unchanged except 0012 re-keyed to the new pre-metadata tree 32a1488d, so the wheel reports 0.1.15+snapshot.32a1488d and a fresh kernel-cache namespace appears",
-      "patch_series": "experiments/2026-11-21-a2-tilelang-ac88f5b/tilelang/series"
+      "role": "TileLang ac88f5bc -> 640fdcae (0.1.16 cut): parallel JIT, toolchain-versioned cache keys, group-readable shared entries, TVM/Z3 solver soundness. 0003/0007/0011 reworked onto the parallel-compilation rewrite, 0012 re-keyed to pre-metadata tree c74164b9; 0709 in the vLLM series lifts the requirements floor to ==0.1.16",
+      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tilelang/series"
     },
     "tile_kernels": {
       "kind": "git",
       "upstream": "https://github.com/deepseek-ai/TileKernels.git",
       "contribution_remote": null,
       "tracking_ref": "refs/heads/main",
-      "revision": "66258df6175d2f630ffecb04c5ab66bff8a2ae6a",
-      "revision_url": "https://github.com/deepseek-ai/TileKernels/commit/66258df6175d2f630ffecb04c5ab66bff8a2ae6a",
-      "version": "2.0.0",
-      "role": "DeepSeek's TileLang kernels (pure Python, release 2.0.0) for the TileLang kernel backend, with patches/tile_kernels (the routed SwiGLU clamp keeps a NaN)",
-      "patch_series": "patches/tile_kernels/series"
+      "revision": "c1cf914a82e6901c679445f872051ce44ac2cc63",
+      "revision_url": "https://github.com/deepseek-ai/TileKernels/commit/c1cf914a82e6901c679445f872051ce44ac2cc63",
+      "version": "2.1.0",
+      "role": "TileKernels 2.1.0 (count-clamp reduction rewrite, norm_forward reorganization, arithmetic FP4 e2m1 cast); serving imports it zero times - kernel-parity benchmarks only; 0001 carries forward byte-identical",
+      "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tile_kernels/series"
     },
     "sparknet": {
       "kind": "git",
@@ -406,5 +407,5 @@
       "role": "NVIDIA's CuTe DSL MegaMoE (also in FlashInfer moe_ep, NVFP4/MXFP8 expert-parallel MoE with communication fused) and TRT-LLM sparse attention; design reference only"
     }
   },
-  "source_manifest": "experiments/2026-11-21-a3-retire-b12x/source.json"
+  "source_manifest": "experiments/2026-11-26-spark-ds41f-1126/source.json"
 }

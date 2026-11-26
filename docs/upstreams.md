@@ -17,22 +17,20 @@ local-inference-lab/vllm integration/karmic-kraken-beta
           kernel family for every serving kernel, sparknet collectives,
           the SPARK_DS41F_* variables)
                     \
-local-inference-lab/b12x integration/karmic-kraken-beta (archived; its last commit)
-        + its series; serving uses only its checkpoint loader
-          (--load-format b12x) and the modules vLLM still imports
-          (spark-ds41f-1025; locks from the release after next leave
-          B12X out, see "Locks without B12X")
+local-inference-lab/b12x (archived; absent from the lock since
+        spark-ds41f-1122, see "Locks without B12X")
                     |
-tile-ai/tilelang main (0.1.15)
-        + patches (SM120/SM121 block-scaled MMA: MXFP8, FP8 x FP4, MXFP4)
-deepseek-ai/TileKernels main (2.0.0) + patches/tile_kernels
-christopherowen/dgx-spark-networking (sparknet)
+tile-ai/tilelang main (0.1.16)
+        + patches (SM120/SM121 block-scaled MMA: MXFP8, FP8 x FP4, MXFP4;
+          0003/0007/0011 reworked onto the 0.1.16 parallel-compilation
+          rewrite, 0012 re-keyed to the pre-metadata tree)
+deepseek-ai/TileKernels main (2.1.0) + the release's tile_kernels series
+christopherowen/dgx-spark-networking (sparknet 0.5.0)
                      ---- spark-ds41f:<vLLM base>-<release>
                     /
-NVIDIA/nccl v2.30.7-1
-        + its series (IB send-path fence, bidirectional switchless
-          rings, balanced channels), replacing the base
-          image's nvidia-nccl-cu13 libnccl.so.2
+NVIDIA/nccl v2.32.6-1
+        + an empty series (the switched fabric carries no local NCCL
+          patches), replacing the base image's nvidia-nccl-cu13 libnccl.so.2
 
 deepseek-ai/DeepSeek-V4.1-Flash-1017 (the recipe's model; unchanged, and TP3
         head padding is in the serving source, so no config overlay is mounted)
@@ -40,20 +38,23 @@ deepseek-ai/DeepSeek-V4.1-Flash-1017 (the recipe's model; unchanged, and TP3
 
 The official vLLM nightly at `af1c0149` supplies the CUDA/runtime base, including
 FlashInfer 0.6.18.post1; only vLLM's two stable CUDA extensions are rebuilt for
-SM121 against CUTLASS v4.7.1. Canonical vLLM main is parked while the Local
+SM121 against CUTLASS v4.8.1. Canonical vLLM main is parked while the Local
 Inference Lab integration branch is the serving source.
 
 
-**The spark-eb1a site runs ahead of this chain** (since 2026-11-21, site
-deployment, not a promotion): its profile selects a candidate lock with vLLM
-`6d66eed3` (LIL head), CUTLASS/CuTe DSL 4.8.1, TileLang `ac88f5bc` (head) and
-**NCCL 2.32.6-1 with an empty series** — on the switched fabric every local
-NCCL patch is upstream-owned or switchless-gated. Candidate locks own their
-`source_manifest` and their patch-series files outright; sharing either with
-another arm corrupts build identities. A TileLang pin refresh re-keys the
-series' `0012` to the new pre-metadata tree (the wheel-version assert fails
-otherwise). Records: `experiments/2026-11-21-site-state`,
-`experiments/2026-11-21-a1-stock-nccl`, `experiments/2026-11-21-a2-tilelang-ac88f5b`.
+**The spark-eb1a site runs exactly this chain** since the spark-ds41f-1126
+promotion (2026-11-26): the root lock is the site stack (vLLM `6d66eed3`,
+CUTLASS/CuTe DSL 4.8.1, TileLang `640fdcae` / wheel `0.1.16+snapshot.c74164b9`,
+TileKernels `c1cf914a` 2.1.0, sparknet `1fd6a1fb`, **NCCL 2.32.6-1 with an
+empty series** — on the switched fabric every local NCCL patch is
+upstream-owned or switchless-gated) and the site profile inherits it. Candidate
+locks still own their `source_manifest` and patch-series files outright; sharing
+either with another arm corrupts build identities. A TileLang pin refresh re-keys
+the series' `0012` to the new pre-metadata tree (the wheel-version assert fails
+otherwise). Promotion records: `experiments/2026-11-26-spark-ds41f-1126`
+(plus the single-variable arms `experiments/2026-11-26-tilelang-0116`,
+`experiments/2026-11-26-tilek-210`; the rejected sparknet 0.6.0 arm is
+`experiments/2026-11-26-sparknet-060`).
 
 ## Source map
 

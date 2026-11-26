@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "promoted_baseline": "2026-11-22-spark-ds41f-1122",
+  "promoted_baseline": "2026-11-26-spark-ds41f-1126",
   "model": "v41-flash-1017",
   "models": {
     "v41-flash": {
@@ -28,12 +28,12 @@
   },
   "container": {
     "name": "spark-ds41f",
-    "image": "spark-ds41f:a3-no-b12x-r5",
+    "image": "spark-ds41f:1126",
     "expected_labels": {
-      "local.spark-ds41f.vllm.tree": "51554e28f7a92e2f054760319e26cf574b915c15",
+      "local.spark-ds41f.vllm.tree": "9c20f2003ed245793a333d37687a91d3a9cab91d",
       "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
-      "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
-      "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+      "local.spark-ds41f.tilelang.tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
+      "local.spark-ds41f.tile_kernels.tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
       "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
     },
     "docker_run_args": [
@@ -283,7 +283,7 @@
         "NCCL_MAX_NCHANNELS": "8",
         "SPARKNET_ROCE_ALLGATHER_MAX_BYTES": "4194304"
       },
-      "benchmark_reference": "manifests/benchmarks/2026-11-22-spark-ds41f-1122-switched.json"
+      "benchmark_reference": "manifests/benchmarks/2026-11-26-spark-ds41f-1126-switched.json"
     },
     "tp5-switched": {
       "notes": "Five nodes cabled through a switch (two ConnectX-7 paths per port); NCCL and one-shot settings are sparknet's oneshot-switched profile over tp4-ring's sizing, with uneven tensor-parallel shards padded per 0625-0628.",

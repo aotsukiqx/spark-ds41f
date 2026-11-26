@@ -692,7 +692,7 @@ def render_current_state_active_settings(data: dict[str, Any]) -> str:
         ),
         (
             "Sources",
-            f"Local Inference Lab `integration/karmic-kraken-beta` vLLM `{vllm_u['revision'][:8]}` + `{vllm_u['patch_series']}` ({vllm_u['patch_count']} patches, patch head `{vllm_u['patch_head'][:8]}`, tree `{vllm_u['tree'][:8]}`), TileLang {tl_u['version']} ({tl_u['patch_count']} patches), TileKernels {tk_u['version']} ({tk_u['patch_count']} patch), sparknet {sn_u['version']}, NCCL 2.30.7 ({nccl_u['patch_count']} patches, tree `{nccl_u['tree'][:8]}`); direct checkpoint loader (`--load-format direct`, vLLM 0499, `VLLM_PLUGINS` empty)",
+            f"Local Inference Lab `integration/karmic-kraken-beta` vLLM `{vllm_u['revision'][:8]}` + `{vllm_u['patch_series']}` ({vllm_u['patch_count']} patches, patch head `{vllm_u['patch_head'][:8]}`, tree `{vllm_u['tree'][:8]}`), TileLang {tl_u['version']} ({tl_u['patch_count']} patches), TileKernels {tk_u['version']} ({tk_u['patch_count']} patch), sparknet {sn_u['version']}, NCCL {nccl_u['version']} ({nccl_u['patch_count']} patches, tree `{nccl_u['tree'][:8]}`); direct checkpoint loader (`--load-format direct`, vLLM 0499, `VLLM_PLUGINS` empty)",
         ),
         (
             "Image",
