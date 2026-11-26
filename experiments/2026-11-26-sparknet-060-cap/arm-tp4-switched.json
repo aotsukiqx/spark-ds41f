@@ -1,0 +1,30 @@
+{
+  "notes": "sparknet 0.6.0 with the eligibility cap: the 1126 promoted stack plus sources.sparknet b01f350d (0.6.0) and vLLM series 0710, with SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 (the 0.5.0 single-slot boundary given the switched shape's 4 MiB ALLGATHER_MAX_BYTES). The cap keeps large SP prefill collectives on the tuned PyNCCL path (NCCL_BUFFSIZE 2 MiB, +1.7-2.3% at 131K) that 0.6.0's multi-stage kernel displaced (measured -3.0% prefill, experiments/2026-11-26-sparknet-060), while decode-size collectives keep 0.6.0's PDL chaining and the pinned proxy. Gate: 131K prefill back at the production level, decode parity, determinism identical.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1126-sparknet-060-cap",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "fb383429d1da95180c8068e1c954e809698c17ea",
+        "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+        "local.spark-ds41f.tilelang.tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
+        "local.spark-ds41f.tile_kernels.tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
+        "local.spark-ds41f.sparknet.tree": "1739407706277142da7a12c95fca3c503c8cb11c"
+      }
+    },
+    "shapes": {
+      "tp4-switched": {
+        "environment": {
+          "NCCL_BUFFSIZE": "2097152",
+          "NCCL_CUMEM_ENABLE": "0",
+          "NCCL_MAX_NCHANNELS": "8",
+          "SPARKNET_ROCE_ALLGATHER_MAX_BYTES": "4194304",
+          "SPARK_DS41F_ONESHOT_MAX_BYTES": "4194304"
+        }
+      }
+    },
+    "upstreams_config": "experiments/2026-11-26-sparknet-060-cap/upstreams.lock.json"
+  }
+}
