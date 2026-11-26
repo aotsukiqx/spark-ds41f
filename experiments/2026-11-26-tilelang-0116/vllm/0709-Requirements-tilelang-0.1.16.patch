@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Thu, 26 Nov 2026 20:10:00 +0100
+Subject: [PATCH] Requirements: tilelang 0.1.16
+
+Upstream base: local-inference-lab/vllm@6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db
+with the 648-patch serving series unchanged.
+
+Rationale: the image build's cross-consumer requirement check rejects
+tilelang 0.1.16+snapshot.<tree> against `tilelang==0.1.15` — PEP 440 local
+versions only satisfy `==` on the same base version. The tilelang-0116
+candidate moves the pin to the 0.1.16 cut, so vLLM's declared floor moves
+with it.
+
+Quality: a requirements declaration only; no code, no import, no runtime
+path changes. The installed wheel is still the patched snapshot whose
+identity is the pre-metadata tree (0012 re-key).
+
+Tests: the image build's own version assertion (requirements/cuda.txt vs
+the built wheel) is the test; it failed before this patch and passes after.
+
+Upstream status: local pin alignment; not submitted (the LIL branch pins
+0.1.15 until its own refresh).
+---
+ requirements/cuda.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/requirements/cuda.txt b/requirements/cuda.txt
+--- a/requirements/cuda.txt
++++ b/requirements/cuda.txt
+@@ -20,4 +20,4 @@
+ flashinfer-cubin==0.7.1
+ apache-tvm-ffi==0.1.11
+-tilelang==0.1.15
++tilelang==0.1.16
+ nvidia-cudnn-frontend>=1.19.1
