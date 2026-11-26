@@ -31,7 +31,7 @@
         "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
       }
     },
-    "upstreams_config": "experiments/2026-11-21-a3-retire-b12x/upstreams.lock.json"
+    "upstreams_config": "upstreams.lock.json"
   },
   "serve_options": {
     "--max-model-len": "716800"
@@ -39,5 +39,5 @@
   "unset": [
     "glp"
   ],
-  "notes": "spark-eb1a site deployment. Since 2026-11-21 it names the deployed stack: spark-ds41f:a3-no-b12x-r5 (vLLM 6d66eed3 + the retire-B12X series, CuTe DSL/CUTLASS 4.8.1, TileLang ac88f5bc, stock NCCL 2.32.6-1, TileKernels 2.0.0, sparknet 1fd6a1fb; B12X absent from image, lock and labels) at the unchanged shape: four nodes through the 200 GbE lossless CRS812 fabric, stock 4 KiB kernel, no memory saver, 716,800-token requests, 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool with NCCL_BUFFSIZE 2 MiB. This is a site deployment, not a repository promotion: config/cluster.json, upstreams.lock.json and manifests/ still name spark-ds41f-1107. The GLP-steered name stays unset (HF_HUB_OFFLINE)."
+  "notes": "spark-eb1a site deployment. Since 2026-11-21 it names the deployed stack: spark-ds41f:a3-no-b12x-r5 (vLLM 6d66eed3 + the retire-B12X series, CuTe DSL/CUTLASS 4.8.1, TileLang ac88f5bc, stock NCCL 2.32.6-1, TileKernels 2.0.0, sparknet 1fd6a1fb; B12X absent from image, lock and labels) at the unchanged shape: four nodes through the 200 GbE lossless CRS812 fabric, stock 4 KiB kernel, no memory saver, 716,800-token requests, 16 admitted sequences, the recipe's 16,384-token budget and 10.5 GiB KV pool with NCCL_BUFFSIZE 2 MiB. Promoted as spark-ds41f-1122 (2026-11-22): the root upstreams.lock.json is now this stack, so the profile inherits it instead of carrying a candidate lock. The GLP-steered name stays unset (HF_HUB_OFFLINE)."
 }
