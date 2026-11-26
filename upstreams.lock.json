@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_from_baseline": "2026-11-07-spark-ds41f-1107",
+  "generated_from_baseline": "2026-11-22-spark-ds41f-1122",
   "sources": {
     "vllm": {
       "kind": "git",
