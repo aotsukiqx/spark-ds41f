@@ -3,7 +3,7 @@
   "captured_at": "2026-11-07",
   "vllm": {
     "base_revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
-    "patch_series": "experiments/2026-11-26-tilelang-0116/vllm/series",
+    "patch_series": "experiments/2026-11-26-spark-ds41f-1126/vllm/series",
     "patchset_sha256": "d8f34afbe7891f58c49349463464d417669d9d14417673dd6f6bfcbfeaf35531",
     "expected_tree": "9c20f2003ed245793a333d37687a91d3a9cab91d",
     "verification": "bin/spark build prepare applies the series to the pinned revision and checks this patch head and tree; image label local.spark-ds41f.vllm.tree matches",
@@ -172,7 +172,7 @@
   "deployment_artifacts": {},
   "tilelang": {
     "base_revision": "640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
-    "patch_series": "experiments/2026-11-26-tilelang-0116/tilelang/series",
+    "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tilelang/series",
     "patchset_sha256": "d49b6673d2e27c0b8438f0c706838993b4435938e799e86c000b5541d8e3ee4f",
     "patch_head": "bdd4cad90fd1c695578d5580c0f4b94e4dd2060f",
     "expected_tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
@@ -193,11 +193,11 @@
     "patch_count": 13
   },
   "tile_kernels": {
-    "base_revision": "66258df6175d2f630ffecb04c5ab66bff8a2ae6a",
-    "patch_series": "experiments/2026-11-26-tilelang-0116/tile_kernels/series",
+    "base_revision": "c1cf914a82e6901c679445f872051ce44ac2cc63",
+    "patch_series": "experiments/2026-11-26-spark-ds41f-1126/tile_kernels/series",
     "patchset_sha256": "3fed91bbd083d38b08de1bd7ebe25dbc7aec9d36f4e2b8f7adbfb497b128c22c",
-    "patch_head": "edfa64d018bc64006fcb07c95c32fa196363c0ae",
-    "expected_tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
+    "patch_head": "9040550b03aaba46835a46723190fa54a8e2632e",
+    "expected_tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
     "verification": "bin/spark3 build prepare checks out the pinned revision and checks this tree; image label local.spark3.tile_kernels.tree matches, and the image build checks the installed tile_kernels against the wheel it built"
   },
   "sparknet": {
