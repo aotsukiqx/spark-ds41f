@@ -100,10 +100,10 @@
       "upstream": "https://github.com/christopherowen/dgx-spark-networking.git",
       "contribution_remote": null,
       "tracking_ref": "refs/heads/main",
-      "revision": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
-      "revision_url": "https://github.com/christopherowen/dgx-spark-networking/commit/b01f350d061a6434c2186df73fa568ab4a9e4aa0",
-      "version": "0.6.0",
-      "role": "sparknet: one-shot RoCE collectives (TileLang kernels only, timed waits that stop the GPU, API 2) and fabric profiles; 0.6.0 chains the one-shot kernels with programmatic dependent launch, runs large (>256 KiB) SP prefill collectives as one persistent multi-stage pipelined kernel (8 CTAs, 4 MiB stages) instead of the 0.5.0 single-slot cap and PyNCCL fallback, and pins the RoCE proxy thread to a fast core within the cpuset"
+      "revision": "1fd6a1fbd8dc4884057046d1ebd93d585c9e4bcf",
+      "revision_url": "https://github.com/christopherowen/dgx-spark-networking/commit/1fd6a1fbd8dc4884057046d1ebd93d585c9e4bcf",
+      "version": "0.5.0",
+      "role": "sparknet: one-shot RoCE collectives (TileLang kernels only, timed waits that stop the GPU, API 2) and fabric profiles, for the TileLang family's TP collectives; release 0.5.0 plus single-slot transfer cap (<= _slot_bytes) so large SP prefill chunks use PyNCCL"
     }
   },
   "references": {
