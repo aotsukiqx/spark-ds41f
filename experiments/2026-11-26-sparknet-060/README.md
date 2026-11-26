@@ -42,6 +42,32 @@ by this experiment folder outright.
 `manifests/benchmarks/2026-11-22-spark-ds41f-1122-switched.json`, a cooled
 131K prefill, and the temperature-0 determinism gate.
 
-## Results
+## Results (window 2026-11-26, two clean boots)
 
-(to be filled; adverse runs kept)
+| measure | 1122 reference | boot 1 | boot 2 |
+|---|---:|---:|---:|
+| quality | 5/5 | 5/5 | 5/5 |
+| temp-0 determinism | — | identical, 0/0 diffs (6 scenarios) | — |
+| decode c1 step (prose/code) | 27.93 / 30.21 ms | 27.87 / 30.18 | 27.27 / 30.03 |
+| decode grid | — | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,654.7 (a3, same suite) | **8,398.7 ±0.2%** | **8,393.0 ±0.5%** |
+| boot to API | ~123 s warm | +118.5 s | +109.0 s |
+
+Decode: parity at every point in both boots — the PDL chaining did not move
+step time on this workload. Prefill 131K is **-3.0% against a3's cooled
+same-suite measurement (8,654.7)** and about -4.5% against the level expected
+after the 2026-11-21 `NCCL_BUFFSIZE` 2 MiB alignment (+1.7-2.3% at 131K);
+repeatable across two boots at ±0.2-0.5% spread. Mechanism: 0.6.0's
+multi-stage one-shot kernel takes over the >256 KiB sequence-parallel
+collectives and displaces the PyNCCL path that the 2 MiB buffer tuning had
+accelerated.
+
+**Verdict: not adopted** — parity on decode, repeatable prefill regression.
+Production stays on the 1122 stack. Recorded follow-up option (own experiment,
+one variable): 0.6.0 with `SPARKNET_ROCE_ALLREDUCE_CAPACITY_BYTES` /
+`SPARKNET_ROCE_ALLGATHER_MAX_BYTES` capped back to the single-slot size, which
+restores the tuned NCCL fallback under 0.6.0's PDL chaining and proxy pinning.
+Receipts: `runs/b1`, `runs/b1-prefill`, `runs/b2`. Host note for the owner:
+`doctor --live` now errors on all four nodes with `nvidia-drm fbdev is N,
+expected Y` — a host-level drift unrelated to this candidate (present with
+production 1122 as well); fix needs a service-stopped reboot.
