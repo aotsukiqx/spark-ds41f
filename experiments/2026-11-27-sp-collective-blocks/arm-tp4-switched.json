@@ -1,0 +1,12 @@
+{
+  "notes": "SPARKNET_ROCE_COLLECTIVE_BLOCKS width knob: the 1127 promoted stack with one environment change - SPARKNET_ROCE_COLLECTIVE_BLOCKS=0 restores the full-width collective grid (self._blocks = 64 CTAs) where 0.6.0's default cap of 8 CTAs (2/20 GB10 SMs, an anti-starvation guard for a side-stream overlap this pipeline never runs) measured as the -1.6% prefill residual at 131K. Same image digest as 1127 (spark-ds41f:1127, env-only change; the runtime reads the knob at collective dispatch). Gate: prefill 131K >= 8,594.8 (residual recovered), decode 10/10 same, determinism identical, quality 5/5, and explicit watch for the 150-375 us overlap-stall the cap was designed to prevent (decode-adjacent prefill points, step-time outliers).",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "environment": {
+      "SPARKNET_ROCE_COLLECTIVE_BLOCKS": "0"
+    },
+    "upstreams_config": "experiments/2026-11-27-sp-collective-blocks/upstreams.lock.json"
+  }
+}

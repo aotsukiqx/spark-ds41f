@@ -1,0 +1,10 @@
+From 7d9bd0df8564e06b09fa79efe42325061bb4c933 Mon Sep 17 00:00:00 2001
+From: aotsukiqx <y.aotsuki@gmail.com>
+Date: Sat, 21 Nov 2026 11:16:52 +0800
+Subject: [PATCH 8/9] 0707 [Model loading, DS4.1] Pre-build direct_io and
+ engram_rows io_uring helpers into VLLM_NATIVE_CACHE_DIR
+
+Already present in this tree via the series' rc17 pre-build patch (0581); the helper functions, prebuilt-root logic and test are byte-identical, so this commit carries no diff.
+-- 
+2.51.2
+
