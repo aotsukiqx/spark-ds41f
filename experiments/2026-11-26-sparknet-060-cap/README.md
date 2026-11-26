@@ -57,3 +57,26 @@ code-level analysis and a proper fix explicitly deferred to a post-window
 task. Receipt: boot 3's bench →
 `manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json`.
 Receipts: `runs/b1` (uncapped evidence), `runs/b2`, `runs/b3`.
+
+## Post-window code analysis (2026-11-27, owner-deferred item)
+
+The residual is structural: in 0.6.0 every eager (non-captured) dim-0
+all-gather / reduce-scatter whose row fits a slot dispatches to the
+multi-stage persistent kernel through `_collective_max_blocks`
+(`oneshot/runtime.py`), which caps the grid at
+`SPARKNET_ROCE_COLLECTIVE_BLOCKS` — **default 8 CTAs = 2 of 20 GB10 SMs** —
+where 0.5.0's `_grid_blocks` spread the same payload over up to 64 CTAs. The
+cap is an anti-starvation choice for collectives overlapped with main-stream
+GEMM waves on a side stream (the 0.5.0 multi-launch stall, 150-375 µs); in
+this serving pipeline the SP prefill collectives are not overlapped that
+way, so the preserved SMs sit idle and the collective itself runs ~8x
+narrower. That is the -1.6%.
+
+**Queued one-variable experiment**: `SPARKNET_ROCE_COLLECTIVE_BLOCKS=0` (or
+32/64) in the switched environment restores full-width collectives under
+0.6.0's single persistent kernel — expected to recover the residual and
+potentially beat 0.5.0 (the persistent kernel avoids the old multi-launch
+yield stalls); the risk to gate is the overlap-stall case the cap protected.
+`SPARKNET_ROCE_STAGE_BYTES` (4 MiB stages) is the secondary granularity
+knob. The PDL `T.pdl_sync()` addition is a no-op in eager launches (decode
+parity confirms).
