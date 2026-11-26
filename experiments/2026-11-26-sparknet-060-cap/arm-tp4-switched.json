@@ -14,17 +14,9 @@
         "local.spark-ds41f.sparknet.tree": "1739407706277142da7a12c95fca3c503c8cb11c"
       }
     },
-    "shapes": {
-      "tp4-switched": {
-        "environment": {
-          "NCCL_BUFFSIZE": "2097152",
-          "NCCL_CUMEM_ENABLE": "0",
-          "NCCL_MAX_NCHANNELS": "8",
-          "SPARKNET_ROCE_ALLGATHER_MAX_BYTES": "4194304",
-          "SPARK_DS41F_ONESHOT_MAX_BYTES": "4194304"
-        }
-      }
-    },
-    "upstreams_config": "experiments/2026-11-26-sparknet-060-cap/upstreams.lock.json"
+    "upstreams_config": "experiments/2026-11-26-sparknet-060-cap/upstreams.lock.json",
+    "environment": {
+      "SPARK_DS41F_ONESHOT_MAX_BYTES": "4194304"
+    }
   }
 }
