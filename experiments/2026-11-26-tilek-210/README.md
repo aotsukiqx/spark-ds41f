@@ -31,6 +31,20 @@ Same window protocol; the gate's purpose is to **prove** the hot path is
 untouched: decode grid and quality must sit inside the reference intervals,
 and the release tests keep their two pre-existing scheduler failures.
 
-## Results
+## Results (window 2026-11-26, two warm boots)
 
-(to be filled; adverse runs kept)
+| measure | 1122 reference | boot 1 | boot 2 |
+|---|---:|---:|---:|
+| quality | 5/5 | 5/5 | 5/5 |
+| temp-0 determinism | — | identical, 0/0, hashes equal to the production stack | — |
+| decode c1 step (prose/code) | 27.93 / 30.21 ms | 27.99 / 30.77 | 27.56 / 30.15 |
+| decode grid | — | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,654.7 (a3, same suite) | 8,615.1 ±0.1% | 8,590.2 ±1.1% |
+| boot to API | ~123 s warm | +112.8 s | +108.0 s |
+
+**Verdict: qualified — the hot path is untouched, as designed.** Every gate
+sits at production level (decode parity, prefill parity, identical
+determinism hashes, quality 5/5, unchanged TileLang cache namespace so boots
+stay warm). The value is drift alignment for the kernel-parity benchmarks,
+not serving speed. Adoptable by owner decision; 0001 carries forward
+byte-identical. Receipts: `runs/b1`, `runs/b2`.
