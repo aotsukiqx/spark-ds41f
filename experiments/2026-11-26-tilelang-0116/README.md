@@ -42,11 +42,33 @@ pass `ast.parse`. A fresh kernel-cache namespace appears on every rank
 ## Method
 
 Same window protocol as sparknet-060: `build prepare --lock` → `build check`
-→ `build image --apply` → `build distribute --apply`; two clean boots with the
-`quality,decode` gate (`--allow-mismatch --cool-below 0`) against
-`manifests/benchmarks/2026-11-22-spark-ds41f-1122-switched.json`, a cooled
-131K prefill, cold and warm boot timing recorded.
+→ `build image --apply` → `build distribute --apply`; two clean boots (cold,
+then warm) with the `quality,decode,prefill` gate (`--allow-mismatch
+--cool-below 0`) against
 
-## Results
+## Results (window 2026-11-26, cold boot + warm boot)
 
-(to be filled; adverse runs kept)
+| measure | 1122 reference | boot 1 (cold) | boot 2 (warm) |
+|---|---:|---:|---:|
+| quality | 5/5 | 5/5 | 5/5 |
+| temp-0 determinism | — | identical, 0/0, hashes equal to the production stack | — |
+| decode c1 step (prose/code) | 27.93 / 30.21 ms | 28.07 / 30.43 | 27.75 / 30.23 |
+| decode grid | — | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,654.7 (a3, same suite) | 8,570.6 ±0.2% | 8,695.4 ±0.3% |
+| boot to API | — | **+698.8 s** (fresh namespace) | **+111.8 s** |
+
+The reworked series needed one extra patch beyond the rebase: `0709` bumps
+vLLM's `requirements/cuda.txt` floor `tilelang==0.1.15` → `==0.1.16` (the
+image build's cross-consumer check rejects `0.1.16+snapshot` against
+`==0.1.15`; PEP 440 local versions match `==` only on the same base). vLLM
+chain tree moved to `9c20f2003ed2`.
+
+**Verdict: qualified, no regression** — decode parity both boots (c1 within
+±0.7%), prefill parity (two-boot mean ≈ 8,633 against a3's 8,654.7),
+determinism hashes identical to the production stack (the compiler move
+changed no temperature-0 output), quality 5/5. Cold boot 698.8 s against the
+882 s of the 2026-11-20 refresh and warm boot 111.8 s against 123 s —
+consistent with, not proof of, the parallel JIT helping candidate churn.
+Adoptable by owner decision; the lock advance carries cache-key hygiene,
+toolchain-versioned keys, group-readable shared caches and the TVM/Z3
+solver soundness fixes. Receipts: `runs/b1`, `runs/b2`.
