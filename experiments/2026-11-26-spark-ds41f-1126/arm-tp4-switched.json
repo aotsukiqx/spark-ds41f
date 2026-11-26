@@ -1,0 +1,19 @@
+{
+  "notes": "spark-ds41f-1126 release arm: the 1122 site stack with the two qualified 2026-11-26 advances combined - TileLang 640fdcae (0.1.16, reworked 0003/0007/0011, 0012 re-keyed to c74164b9, plus 0709 bumping vLLM's requirements floor) and TileKernels c1cf914a (2.1.0, 0001 byte-identical). Each advance was qualified alone against the 1122 reference in its own two-boot window; this arm qualifies the combination and produces the promotion's benchmark receipt. sparknet stays 1fd6a1fb (0.5.0) - the 0.6.0 advance is the next release's own step.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1126",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "9c20f2003ed245793a333d37687a91d3a9cab91d",
+        "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+        "local.spark-ds41f.tilelang.tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
+        "local.spark-ds41f.tile_kernels.tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-26-spark-ds41f-1126/upstreams.lock.json"
+  }
+}
