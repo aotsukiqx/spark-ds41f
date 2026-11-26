@@ -1,5 +1,5 @@
 {
-  "notes": "TileLang 0.1.16 arm: the 1122 site stack with only sources.tilelang advanced ac88f5bc -> 640fdcae (the 0.1.16 cut). Three cache/JIT patches reworked onto upstream's process-based parallel-compilation rewrite (0003: freeze refusal after the memory-cache lookup beside the new supports_disk_cache early-out; 0007: cache-disabled wrapper bypass; 0011: explicit preparation retained while caching is disabled) and 0012 re-keyed to the new pre-metadata tree c74164b9. The reworked 13-patch series applies clean with plain git apply at 640fdcae; final tree 85daad439e0e6e8182a09c3d9ed685bc2cac1d42. Expected value: process-based parallel JIT cuts cold boot (882 s on the 11-20 refresh), toolchain-versioned cache keys and group-readable shared entries harden cache ops, TVM/Z3 solver soundness fixes. Planner-level rewrites are unmeasured; the decode grid must stay inside the reference intervals.",
+  "notes": "TileLang 0.1.16 arm: the 1122 site stack with only sources.tilelang advanced ac88f5bc -> 640fdcae (the 0.1.16 cut). Three cache/JIT patches reworked onto upstream's process-based parallel-compilation rewrite (0003: freeze refusal after the memory-cache lookup beside the new supports_disk_cache early-out; 0007: cache-disabled wrapper bypass; 0011: explicit preparation retained while caching is disabled) and 0012 re-keyed to the new pre-metadata tree 9c20f200. The reworked 13-patch series applies clean with plain git apply at 640fdcae; final tree 9c20f2003ed245793a333d37687a91d3a9cab91d. Expected value: process-based parallel JIT cuts cold boot (882 s on the 11-20 refresh), toolchain-versioned cache keys and group-readable shared entries harden cache ops, TVM/Z3 solver soundness fixes. Planner-level rewrites are unmeasured; the decode grid must stay inside the reference intervals.",
   "extends": {
     "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
   },
@@ -7,7 +7,7 @@
     "container": {
       "image": "spark-ds41f:1122-tilelang-0116",
       "expected_labels": {
-        "local.spark-ds41f.vllm.tree": "51554e28f7a92e2f054760319e26cf574b915c15",
+        "local.spark-ds41f.vllm.tree": "9c20f2003ed245793a333d37687a91d3a9cab91d",
         "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
         "local.spark-ds41f.tilelang.tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
         "local.spark-ds41f.tile_kernels.tree": "cb2fa41c8af290204c81c547ed678ebf957cca53",
