@@ -1,0 +1,29 @@
+From 7d17f8eaa247d92e0c04ed678d74c399bfabd05f Mon Sep 17 00:00:00 2001
+From: aotsukiqx <y.aotsuki@gmail.com>
+Date: Sat, 21 Nov 2026 11:53:57 +0800
+Subject: [PATCH 6/9] 0705 [DS4.1] The DSpark drafter's NVFP4 head switches go
+
+---
+ vllm/envs.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/vllm/envs.py b/vllm/envs.py
+index a65c5ffc5..14099f77e 100755
+--- a/vllm/envs.py
++++ b/vllm/envs.py
+@@ -1895,9 +1895,9 @@ environment_variables: dict[str, Callable[[], Any]] = {
+     "VLLM_MTP_NVFP4_LM_HEAD": lambda: bool(
+         int(os.getenv("VLLM_MTP_NVFP4_LM_HEAD", "1"))
+     ),
+-    # Store the DeepSeek V4/V4.1 target vocabulary head (which the DSpark
+-    # drafter shares) in the exact 12-bit packed BF16 form: every weight bit
+-    # is kept, in 75% of the bytes.
++    # Store the DeepSeek V4.1 target vocabulary head (which the DSpark drafter
++    # shares) in its exact 12-bit packed BF16 form (B12X's format, packed and
++    # projected by TileLang): every weight bit is kept, in 75% of the bytes.
+     "VLLM_DS41_PACKED_BF16_LM_HEAD": lambda: bool(
+         int(os.getenv("VLLM_DS41_PACKED_BF16_LM_HEAD", "0"))
+     ),
+-- 
+2.51.2
+

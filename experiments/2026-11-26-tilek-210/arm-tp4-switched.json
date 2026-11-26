@@ -1,0 +1,19 @@
+{
+  "notes": "TileKernels 2.1.0 arm: the 1122 site stack with only sources.tile_kernels advanced 66258df6 (v2.0.0) -> c1cf914a (v2.1.0). The serving tree imports tile_kernels zero times (verified: only benchmarks/kernels/benchmark_deepseek_v41_{mhc_cast,mhc_post,moe_prefill_tiles}.py import it), so the arm's purpose is to prove the hot path is untouched while the kernel-parity benchmarks stop drifting from upstream. v2.1.0 rewrites the count-clamp reduction (int64 via two int32 lanes), reorganizes norm_forward (rstd now None unless with_rstd=True, mega_moe_sf documented CUDA-only), and replaces the FP4 e2m1 cast with an arithmetic implementation; none are on our weight path (UE8M0 + 4-bit deltas go through the in-tree scale_codes). 0001 applies at both pins byte-identical; applied tree 8386508bc3dcfc19eabc6cde1eb7016824a1bd6e.",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "container": {
+      "image": "spark-ds41f:1122-tilek-210",
+      "expected_labels": {
+        "local.spark-ds41f.vllm.tree": "51554e28f7a92e2f054760319e26cf574b915c15",
+        "local.spark-ds41f.nccl.tree": "331c032a7f6222c3b4ae1df5cb6ca8aa9411c34e",
+        "local.spark-ds41f.tilelang.tree": "c3b54074b6da3295bd81028eb28138adeaddc676",
+        "local.spark-ds41f.tile_kernels.tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
+        "local.spark-ds41f.sparknet.tree": "8cc28a5cd3e683c1f114ed843453e3ce34f323e0"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-26-tilek-210/upstreams.lock.json"
+  }
+}
