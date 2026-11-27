@@ -54,3 +54,33 @@ kernel's reduction (a deterministic reduction tree independent of the CTA
 count) — an upstream sparknet change, and a natural contribution-back
 candidate alongside the deferred code analysis. Receipts: `runs/b1`
 (including the determinism failure record).
+
+## Post-experiment code study (2026-11-27)
+
+Three corrections to the arm's premise, from reading the 0.6.0 kernel stack
+(`_reducescatter_tilelang.py`, `_device.py`, `runtime.py`) and the upstream
+evidence tree:
+
+- The reduction is **already order-preserving at any width**: each 16-byte
+  pack is reduced by a single thread over sources in fixed rank order with
+  FP32 accumulation (`roce_reduce_pack_bf16`) — the grid only chooses which
+  thread handles which pack. "Widening changes the reduction order" was
+  wrong.
+- The 64-CTA wide grid is upstream's own measured design for the one-shot
+  data phase (`sparknet/evidence/2026-10-20-wide-read/`: 8→64 blocks,
+  reduce 35.6→12.3 µs at 480 KiB per rank beside the model's L2 prefetch);
+  `SPARKNET_ROCE_COLLECTIVE_BLOCKS=8` is only the staged SP path's overlap
+  guard introduced by 0.6.0's `ca59c957`.
+- The determinism failure is therefore **not** an inherent property of
+  width: the gate JSON's repeat scenario (`again`) differs from itself
+  across runs and the diff count tracks batch composition (1 vs 2) — a
+  timing/batch-dependent deviation exposed by the wider staged grid, i.e. a
+  defect worth root-causing, not a trade-off to design around.
+
+Queued localization probe (owner approval pending): boot the width-0 arm and
+(1) classify deterministic-vs-batch-dependent with fixed prompts under
+alternating batch compositions, (2) bisect by collective type via selective
+`SPARK_DS41F_ONESHOT_MAX_BYTES` caps, (3) sweep `SPARKNET_ROCE_STAGE_BYTES`
+to test the epoch/slot/stage interaction with payload-size changes (the
+prime suspect: `seq = epoch + 1 + s` slot selection against per-collective
+stage counts that vary with the batch).
