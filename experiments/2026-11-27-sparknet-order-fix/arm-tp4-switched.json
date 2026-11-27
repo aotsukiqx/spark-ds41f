@@ -11,7 +11,8 @@
     "container": {
       "expected_labels": {
         "local.spark-ds41f.sparknet.tree": "984254146ae2ccbfff6378800b628a4816606eb7"
-      }
+      },
+      "image": "spark-ds41f:1127-orderfix"
     },
     "upstreams_config": "experiments/2026-11-27-sparknet-order-fix/upstreams.lock.json"
   }
