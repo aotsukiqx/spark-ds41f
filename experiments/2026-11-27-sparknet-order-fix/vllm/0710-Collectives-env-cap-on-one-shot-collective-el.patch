@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Thu, 26 Nov 2026 23:30:00 +0100
+Subject: [PATCH] Collectives: env cap on one-shot collective eligibility
+
+Upstream base: local-inference-lab/vllm@6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db
+with the 1126 release series (0709 included). The single choke points in
+vllm/distributed/device_communicators/cuda_communicator.py are the all_gather,
+reduce_scatter and all_to_all_rows delegations to the one-shot adapter.
+
+Rationale: sparknet 0.6.0's multi-stage kernels accept arbitrarily large
+payloads whose per-row pack fits a slot (oneshot/runtime.py
+should_reduce_scatter: ``world_size * row_bytes <= _slot_bytes`` outside CUDA
+graph capture), so large sequence-parallel prefill collectives leave the
+PyNCCL path — the path the 2026-11-21 2 MiB NCCL_BUFFSIZE alignment
+accelerated by +1.7-2.3% at 131K. The measured cost was a repeatable -3.0%
+prefill at 131K (experiments/2026-11-26-sparknet-060).
+SPARK_DS41F_ONESHOT_MAX_BYTES restores the 0.5.0 single-slot boundary at the
+dispatch level: unset or 0 leaves sparknet 0.6.0's eligibility unchanged, a
+byte value caps one-shot eligibility so larger payloads fall back to PyNCCL
+as 0.5.0 did.
+
+Quality: dispatch-only; a capped collective takes the same PyNCCL path 0.5.0
+took, with identical arithmetic (the rank-order reduce-scatter keeps
+bit-identical sums; cuda_communicator already routes there). No kernel,
+buffer or numerics change.
+
+Tests: release tests; the 2026-11-26-sparknet-060-cap window measures the
+capped arm's prefill recovery (gate: 131K back at the production level) and
+decode parity, plus the temperature-0 determinism gate.
+
+Upstream status: local deployment policy; not submitted (depends on our
+NCCL_BUFFSIZE tuning and the 0.6.0 eligibility change).
+---
+ vllm/distributed/device_communicators/cuda_communicator.py | 22 ++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/vllm/distributed/device_communicators/cuda_communicator.py b/vllm/distributed/device_communicators/cuda_communicator.py
+--- a/vllm/distributed/device_communicators/cuda_communicator.py
++++ b/vllm/distributed/device_communicators/cuda_communicator.py
+@@ -2,6 +2,7 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ 
+ 
++import os
+ from typing import TYPE_CHECKING
+ 
+ import torch
+@@ -79,6 +80,21 @@
+         comm.destroy()
+ 
+ 
++
++_ONESHOT_MAX_BYTES = int(os.environ.get("SPARK_DS41F_ONESHOT_MAX_BYTES", "0") or "0")
++
++
++def _oneshot_within_cap(t: torch.Tensor) -> bool:
++    """Env cap on one-shot collective eligibility (unset or 0: uncapped).
++
++    sparknet 0.6.0's multi-stage kernels accept arbitrarily large payloads
++    whose per-row pack fits a slot, displacing the PyNCCL path the 2 MiB
++    NCCL_BUFFSIZE alignment accelerates; the cap restores the 0.5.0
++    single-slot boundary at the dispatch level.
++    """
++    return _ONESHOT_MAX_BYTES <= 0 or t.numel() * t.element_size() <= _ONESHOT_MAX_BYTES
++
++
+ class CudaCommunicator(DeviceCommunicatorBase):
+     b12x_ar_comm: "B12xPcieAllReduce | SparknetOneShotAllReduce | None"
+ 
+@@ -649,6 +665,7 @@
+             and not b12x_ar_comm.disabled
+             and should_all_gather is not None
+             and should_all_gather(input_, dim)
++            and _oneshot_within_cap(input_)
+         ):
+             assert all_gather is not None
+             return all_gather(input_, dim)
+@@ -705,6 +722,7 @@
+             and not b12x_ar_comm.disabled
+             and should_a2a is not None
+             and should_a2a(input_, rows)
++            and _oneshot_within_cap(input_)
+         ):
+             assert a2a is not None
+             return a2a(input_, rows)
+@@ -733,6 +751,7 @@
+             and not b12x_ar_comm.disabled
+             and should_rs is not None
+             and should_rs(input_, dim)
++            and _oneshot_within_cap(input_)
+         ):
+             assert rs is not None
+             return rs(input_, dim)

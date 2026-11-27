@@ -1,0 +1,18 @@
+{
+  "notes": "Captured<->eager stream-order fix plus full-width SP collectives: the 1127 stack with a local sparknet series (0001 orders eager collectives after graph replays on the shared epoch/slot transport) and the width knob opened - SPARKNET_ROCE_COLLECTIVE_BLOCKS=0 (full width, safe once the ordering fix lands) with SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 retained. Rationale: the probe proved the 8-CTA cap masks a captured<->eager race, not a numerical property; with the ordering fixed, the staged path may run full width and take the proven +1.9% prefill at 131K (8,625.7 measured).",
+  "extends": {
+    "config": "experiments/2026-11-12-site-spark-eb1a/profile.json"
+  },
+  "set": {
+    "environment": {
+      "SPARK_DS41F_ONESHOT_MAX_BYTES": "4194304",
+      "SPARKNET_ROCE_COLLECTIVE_BLOCKS": "0"
+    },
+    "container": {
+      "expected_labels": {
+        "local.spark-ds41f.sparknet.tree": "984254146ae2ccbfff6378800b628a4816606eb7"
+      }
+    },
+    "upstreams_config": "experiments/2026-11-27-sparknet-order-fix/upstreams.lock.json"
+  }
+}

@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Christopher Owen <3221756+christopherowen@users.noreply.github.com>
+Date: Thu, 27 Nov 2026 23:55:00 +0100
+Subject: [PATCH] RoCE: order eager collectives after graph replays
+
+Upstream base: christopherowen/dgx-spark-networking@b01f350d061a6434c2186df73fa568ab4a9e4aa0
+(0.6.0, no local series before this).
+
+Rationale: the one-shot transport has one epoch, one doorbell and two
+ping-pong slots, so collectives must execute in launch order even across
+streams. `_order_stream`/`_mark_stream` enforce that for eager<->eager, but
+`_mark_stream(capturing=True)` records nothing, so a graph replay is
+invisible: under async scheduling (vLLM `--async-scheduling`), alt-stream
+eager SP prefill collectives overlap main-stream decode replays on the same
+epoch/slot region. Measured on spark-eb1a (experiments/2026-11-27-sp-
+collective-blocks): at `SPARKNET_ROCE_COLLECTIVE_BLOCKS=16` the race shows
+as one logprob ULP per generation; at 64 (full width) one token of 192
+flips; hashes drift run-to-run; single-stream generations are immune; the
+default 8-CTA cap masks the window. The fix: when an eager collective runs
+on a different stream than the last capture, record an event on the capture
+stream (the record enqueues after every replay submitted to it so far) and
+make the eager stream wait it, restoring global launch order at the
+captured<->eager boundary.
+
+Quality: pure stream-ordering; no kernel, buffer, protocol or arithmetic
+change. The extra wait is one event per capture->eager transition, off the
+collective's critical path (the eager launch already waits the last eager
+collective).
+
+Tests: the 2026-11-27-sp-collective-blocks probe receipts (runs b1 at widths
+0/16) reproduce the failure pre-patch; qualification is two clean boots at
+full width with determinism hashes equal to the promoted stack's and prefill
+at the proven 8,625 tok/s level.
+
+Upstream status: local series first; contribution-back candidate (the 8-CTA
+cap currently masks this race for every async-scheduling deployment).
+---
+ sparknet/oneshot/runtime.py | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/sparknet/oneshot/runtime.py b/sparknet/oneshot/runtime.py
+--- a/sparknet/oneshot/runtime.py
++++ b/sparknet/oneshot/runtime.py
+@@ -467,6 +467,8 @@
+         self._gather_buffers: Optional[tuple[torch.Tensor, torch.Tensor]] = None
+         self._align_buffers: Optional[tuple[torch.Tensor, torch.Tensor]] = None
+         self._stream_event = torch.cuda.Event()
++        self._replay_event = torch.cuda.Event()
++        self._replay_pending = False
+         self._last_stream: Optional[torch.cuda.Stream] = None
+         self._capture_stream: Optional[torch.cuda.Stream] = None
+         self._capture_id = 0
+@@ -1121,6 +1123,15 @@
+                     "RoCE collectives must all be captured on one stream"
+                 )
+             return
++        if self._capture_stream is not None and current != self._capture_stream:
++            # A captured launch used the transport after (or before) the last
++            # eager one; a graph replay is invisible to the eager ordering
++            # above, so record on the capture stream -- the record enqueues
++            # after every replay submitted to it so far -- and wait it here.
++            if self._replay_pending:
++                self._replay_event.record(self._capture_stream)
++                self._replay_pending = False
++            current.wait_event(self._replay_event)
+         if self._last_stream is not None and current != self._last_stream:
+             current.wait_event(self._stream_event)
+ 
+@@ -1128,6 +1139,7 @@
+         """Record the ordering event on the current stream after a launch."""
+ 
+         if capturing:
++            self._replay_pending = True
+             return
+         current = torch.cuda.current_stream(self.device)
+         self._stream_event.record(current)
