@@ -82,5 +82,42 @@ Queued localization probe (owner approval pending): boot the width-0 arm and
 alternating batch compositions, (2) bisect by collective type via selective
 `SPARK_DS41F_ONESHOT_MAX_BYTES` caps, (3) sweep `SPARKNET_ROCE_STAGE_BYTES`
 to test the epoch/slot/stage interaction with payload-size changes (the
-prime suspect: `seq = epoch + 1 + s` slot selection against per-collective
-stage counts that vary with the batch).
+prime suspect: `seq = epoch + 1 + s` against per-collective stage counts).
+
+## Probe results and root cause (window 2026-11-27, owner-approved)
+
+| probe | config | determinism | signature |
+|---|---|---|---|
+| A run 1 | width 0, single-stage (STAGE_BYTES=0) | false | 1 token diff in **every** scenario |
+| A run 2 | same, repeat | false | same counts, **different logprob+text hashes than run 1** |
+| B | width 16, single-stage | false | **0 token diffs**, 1 logprob diff everywhere but `again` |
+| reference | width 8 (= 1127) | true | long scenario bit-stable at ALL widths |
+
+Facts established: the deviation is (a) run-to-run **nondeterministic**
+(hashes drift between identical runs), (b) magnitude **scales with width**
+(logprob-ULP at 16, token flip at 64), (c) **confined to concurrent-batch
+scenarios** — the single-stream long generation is bit-identical to
+production at every width, (d) independent of multi-stage sequencing
+(single-stage fails too).
+
+**Root cause (code-level)**: the one-shot transport has one epoch, one
+doorbell and two ping-pong slots, so collectives must execute in launch
+order **even across streams** — and `runtime.py` enforces exactly that for
+eager↔eager (`_order_stream` waits on `_stream_event`, `_mark_stream`
+records it) but **not across the captured↔eager boundary**:
+`_mark_stream(capturing=True)` returns without recording anything, and a
+graph replay is invisible to the runtime. Under `--async-scheduling`, the
+alt-stream eager SP prefill collectives overlap the main stream's decode
+graph replays; both drive the same epoch/slot region, and the wider staged
+grid (64 CTAs) widens the overlap window from invisible (width 8, where the
+8-CTA cap accidentally masks the race) to a visible 1-ULP/token-level
+corruption. Single-stream generations never overlap, hence their immunity.
+
+**Fix design (queued)**: a local sparknet patch (`patches/sparknet/series`,
+~10 lines in `runtime.py`): when an eager collective runs after a capture
+has used the transport, record an event on the capture stream (it enqueues
+after all prior work there, i.e. after the replays) and make the eager
+stream wait on it before launching — restoring global launch order at the
+captured↔eager boundary. Qualification as always: prefill >= 8,625 AND
+determinism hashes equal to 1127's, two boots. Upstream value: the 8-CTA
+cap is currently masking this for every async-scheduling deployment.
