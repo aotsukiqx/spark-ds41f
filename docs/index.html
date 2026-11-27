@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://switchle.ss/">
   <meta property="og:site_name" content="switchless">
-  <meta property="og:image" content="https://switchle.ss/og.png?v=2db3e27e7a">
+  <meta property="og:image" content="https://switchle.ss/og.png?v=0fd23d9755">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="2400">
   <meta property="og:image:height" content="1260">
@@ -18,7 +18,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="switchless* · DeepSeek V4.1 Flash on DGX Spark">
   <meta name="twitter:description" content="Native weights, a million tokens of context, correctness first, then speed. No switch required.*">
-  <meta name="twitter:image" content="https://switchle.ss/og.png?v=2db3e27e7a">
+  <meta name="twitter:image" content="https://switchle.ss/og.png?v=0fd23d9755">
   <meta name="theme-color" content="#0f0d0b">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -793,8 +793,8 @@ bin/spark --cluster-config config/cluster.json \
 
   <script id="manifest-data" type="application/json">
 {
-  "built_as": "spark-ds41f:1126-sparknet-060-cap, retagged spark-ds41f:1127 (same digest; smokes: DS4.1 GPU import, TileLang 0.1.16+snapshot.c74164b9 import, sparknet ABI 10, B12X not installed)",
-  "built_utc": "2026-11-26T15:20:00Z",
+  "built_as": "spark-ds41f:1127-orderfix, retagged spark-ds41f:1128 (same digest; smokes: DS4.1 GPU import, TileLang 0.1.16+snapshot.c74164b9 import, sparknet ABI 10, B12X not installed)",
+  "built_utc": "2026-11-27T00:30:00Z",
   "capabilities": [],
   "container_name": "spark-ds41f",
   "default_shape": "tp4-ring",
@@ -809,25 +809,25 @@ bin/spark --cluster-config config/cluster.json \
   },
   "hosts": {
     "kernel": "7.0.0-1019-nvidia",
-    "known_deviation": "nvidia-drm fbdev=N on all four nodes (pre-existing since before 1122; owner-scheduled reboot fixes it in this window's final step)",
+    "known_deviation": "none open: the nvidia-drm fbdev deviation was fixed on all four nodes on 2026-11-26 (fbdev=1, owner rebooted)",
     "nvidia_driver": "580.178.04",
     "os": "DGX Spark 26.09.2 (dgx-spark-ota-update-meta)",
     "page_size": 4096
   },
-  "image_id": "sha256:6c97d0dd42f861ddef9ecd3c95e3561edfc32e9d7963ff3c34abda549ed0f2ce",
-  "image_tag": "spark-ds41f:1127",
+  "image_id": "sha256:f73087f82877831d86377300fc7e3405ab16fe0175d01562a9dfc4a443cdbba3",
+  "image_tag": "spark-ds41f:1128",
   "kernel_backend": "tilelang",
   "model_repo": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
   "model_revision": "",
-  "promoted_baseline": "2026-11-27-spark-ds41f-1127",
+  "promoted_baseline": "2026-11-27-spark-ds41f-1128",
   "promoted_date": "2026-11-27",
-  "promoted_short": "spark-ds41f-1127",
+  "promoted_short": "spark-ds41f-1128",
   "runtime_choices": {
     "fabric": "lossless switched: host DCB + CRS812 QoS (unchanged)",
-    "kernel_backend": "TileLang only; B12X absent (since 1122); TileLang 0.1.16 stack unchanged from 1126",
-    "nccl": "stock 2.32.6-1, zero local patches; site environment NCCL_BUFFSIZE=2097152, NCCL_MAX_NCHANNELS=8, NCCL_CUMEM_ENABLE=0, NCCL_PROTO=^LL128 (unchanged)",
-    "sparknet": "0.6.0 (b01f350d: PDL-chained one-shot kernels, multi-stage pipelined large collectives, pinned proxy) with vLLM series 0710 and SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 restoring the 0.5.0 single-slot eligibility boundary, so large SP prefill collectives keep the tuned PyNCCL path (NCCL_BUFFSIZE 2 MiB)",
-    "speculative": "DSpark, 5 tokens, draft TP equal to node count, greedy drafting with block verification (unchanged)"
+    "kernel_backend": "TileLang only; B12X absent; the 1126 compiler stack unchanged",
+    "nccl": "stock 2.32.6-1, zero local patches; NCCL_BUFFSIZE 2 MiB (unchanged)",
+    "sparknet": "0.6.0 (b01f350d) + local series 0001 (captured<->eager stream ordering: a replay event recorded on the capture stream is awaited by the next eager collective on another stream), with SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 retaining the tuned PyNCCL path for large SP prefill and SPARKNET_ROCE_COLLECTIVE_BLOCKS=0 running the staged path at full width - the 8-CTA cap only masked the ordering race the fix closes",
+    "speculative": "DSpark, 5 tokens, draft TP equal to node count (unchanged)"
   },
   "served_models": [
     "deepseek-v4.1-flash",
@@ -901,7 +901,7 @@ bin/spark --cluster-config config/cluster.json \
       "transport": "oneshot-ring4"
     },
     {
-      "benchmark_reference": "manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json",
+      "benchmark_reference": "manifests/benchmarks/2026-11-27-spark-ds41f-1128-switched.json",
       "default": false,
       "display_carveout": false,
       "kernel_release": "7.0.0-1019-nvidia-64k",
@@ -931,31 +931,31 @@ bin/spark --cluster-config config/cluster.json \
       "max_num_batched_tokens": 16384,
       "max_num_seqs": 16,
       "memory": {
-        "cluster_min_available_gib": 20.35,
-        "head_min_available_gib": 22.26,
-        "headroom_above_startup_guard_gib": 15.35,
-        "headroom_above_steady_guard_gib": 17.35,
+        "cluster_min_available_gib": 20.49,
+        "head_min_available_gib": 22.43,
+        "headroom_above_startup_guard_gib": 15.49,
+        "headroom_above_steady_guard_gib": 17.49,
         "max_swap_growth_gib": 0.0,
         "per_node": {
           "spark-141e": {
-            "min_available_gib": 22.26,
+            "min_available_gib": 22.43,
             "swap_growth_gib": 0.0
           },
           "spark-2fe7": {
-            "min_available_gib": 22.45,
+            "min_available_gib": 22.43,
             "swap_growth_gib": 0.0
           },
           "spark-a89f": {
-            "min_available_gib": 22.24,
+            "min_available_gib": 22.39,
             "swap_growth_gib": 0.0
           },
           "spark-eb1a": {
-            "min_available_gib": 20.35,
+            "min_available_gib": 20.49,
             "swap_growth_gib": 0.0
           }
         },
-        "worker_max_available_gib": 22.45,
-        "worker_min_available_gib": 20.35
+        "worker_max_available_gib": 22.43,
+        "worker_min_available_gib": 20.49
       },
       "memory_saver_required": true,
       "name": "tp4-switched",
@@ -963,7 +963,7 @@ bin/spark --cluster-config config/cluster.json \
       "page_size_bytes": 65536,
       "page_size_label": "64 KiB",
       "prefix_cache_retention_interval": 8192,
-      "qualified_release": "spark-ds41f-1127",
+      "qualified_release": "spark-ds41f-1128",
       "transport": "oneshot-switched"
     },
     {
@@ -8874,6 +8874,27 @@ bin/spark --cluster-config config/cluster.json \
   ],
   "timeline": [
     {
+      "benchmark_reference": "manifests/benchmarks/2026-11-27-spark-ds41f-1128-switched.json",
+      "captured_at": "20261127T020000Z",
+      "change_from_previous": "spark-ds41f-1127 plus a local sparknet series: 0001 orders eager collectives after graph replays on the single-epoch/doorbell/two-slot transport (_mark_stream(capturing=True) records nothing upstream, so async-scheduling overlap of alt-stream eager SP prefill with decode replays raced the slot region - measured as width-scaled, run-to-run-drifting determinism deviations the 8-CTA cap masked; experiments/2026-11-27-sp-collective-blocks). With ordering closed, the staged path runs full width (SPARKNET_ROCE_COLLECTIVE_BLOCKS=0) and prefill 131K recovers the proven ceiling: 8,616.9/8,612.0 (+1.8% over 1127, at the 8,625.7 headroom within run noise), decode 10/10 same, determinism identical with hashes equal to the production stack across three runs, quality 5/5.",
+      "date": "2026-11-27",
+      "evidence_summary": "Probe dossier (width bisect, run-to-run hash drift, concurrent-only signature, single-stream immunity) establishing the captured<->eager ordering race; then the fix arm: two clean boots, determinism identical x3 with the production canonical hash 8e46794a, prefill 8,616.9 +-0.1% / 8,612.0 +-0.0% at 131K (+1.8%), decode 10/10 same, quality 5/5 both boots. Receipt: boot 2's bench.",
+      "experiments": [
+        "experiments/2026-11-27-sp-collective-blocks/",
+        "experiments/2026-11-27-sparknet-order-fix/"
+      ],
+      "image_id": "sha256:f73087f82877",
+      "image_tag": "spark-ds41f:1128",
+      "is_promoted": true,
+      "previous_baseline": "2026-11-27-spark-ds41f-1127",
+      "shape": "tp4-switched",
+      "short_name": "spark-ds41f-1128",
+      "status": "promoted-baseline",
+      "stem": "2026-11-27-spark-ds41f-1128",
+      "vllm_patch_head": "877782ab",
+      "vllm_tree": "fb383429"
+    },
+    {
       "benchmark_reference": "manifests/benchmarks/2026-11-27-spark-ds41f-1127-switched.json",
       "captured_at": "20261126T160500Z",
       "change_from_previous": "spark-ds41f-1126 plus one advance: sparknet 1fd6a1fb (0.5.0) -> b01f350d (0.6.0) with the one-shot eligibility cap (vLLM 0710, SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 at the switched shape's environment). Bare 0.6.0 measured a repeatable -3.0% prefill regression at 131K (multi-stage kernel displacing the tuned PyNCCL path); the cap recovers a third of it, and the capped arm holds decode parity (10/10 same both boots), identical temperature-0 determinism and quality 5/5 at a recorded, repeatable **-1.6% prefill at 131K** (8,459.7/8,461.1 vs the 1126 receipt's 8,594.8). Adopted on owner direction (2026-11-26) for upstream alignment with the residual attributed to 0.6.0's changed execution of <=4 MiB one-shot collectives; the code-level analysis and a proper fix are explicitly deferred to a post-window task.",
@@ -8885,7 +8906,7 @@ bin/spark --cluster-config config/cluster.json \
       ],
       "image_id": "sha256:6c97d0dd42f8",
       "image_tag": "spark-ds41f:1127",
-      "is_promoted": true,
+      "is_promoted": false,
       "previous_baseline": "2026-11-26-spark-ds41f-1126",
       "shape": "tp4-switched",
       "short_name": "spark-ds41f-1127",
@@ -9725,7 +9746,7 @@ bin/spark --cluster-config config/cluster.json \
       "name": "vllm",
       "patch_count": 652,
       "patch_head": "877782ab0652",
-      "patch_series": "experiments/2026-11-26-sparknet-060-cap/vllm/series",
+      "patch_series": "experiments/2026-11-27-sparknet-order-fix/vllm/series",
       "revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
       "role": "serving source (LIL integration branch, 6d66eed35b0a) with the production series plus the A3 retire-B12X tail: 648 active patches \u2014 the 641 of the 11-20 series (one upstream duplicate dropped, one rebased hunk, 0646 lifting cutlass-dsl to 4.8.1) and seven reworked retire patches 0700-0706 (packed BF16 head packs with TileLang, Engram geometry in-tree, MXFP4-CSF leaves the package, the b12x load format removed, the V4.1 cache layout named, the NVFP4 head switches' last comment, B12X's own tests skip without it); 0707/0708 are TODO- placeholders whose content the 1107 series already carries (rc17 0581/0582)",
       "tree": "fb383429d1da95180c8068e1c954e809698c17ea",
@@ -9809,7 +9830,7 @@ bin/spark --cluster-config config/cluster.json \
       "name": "tilelang",
       "patch_count": 13,
       "patch_head": "bdd4cad90fd1c695578d5580c0f4b94e4dd2060f",
-      "patch_series": "experiments/2026-11-26-sparknet-060-cap/tilelang/series",
+      "patch_series": "experiments/2026-11-27-sparknet-order-fix/tilelang/series",
       "revision": "640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
       "role": "TileLang ac88f5bc -> 640fdcae (0.1.16 cut): parallel JIT, toolchain-versioned cache keys, group-readable shared entries, TVM/Z3 solver soundness. 0003/0007/0011 reworked onto the parallel-compilation rewrite, 0012 re-keyed to pre-metadata tree c74164b9; 0709 in the vLLM series lifts the requirements floor to ==0.1.16",
       "tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
@@ -9821,7 +9842,7 @@ bin/spark --cluster-config config/cluster.json \
       "name": "tile_kernels",
       "patch_count": 1,
       "patch_head": "9040550b03aaba46835a46723190fa54a8e2632e",
-      "patch_series": "experiments/2026-11-26-sparknet-060-cap/tile_kernels/series",
+      "patch_series": "experiments/2026-11-27-sparknet-order-fix/tile_kernels/series",
       "revision": "c1cf914a82e6901c679445f872051ce44ac2cc63",
       "role": "TileKernels 2.1.0 (count-clamp reduction rewrite, norm_forward reorganization, arithmetic FP4 e2m1 cast); serving imports it zero times - kernel-parity benchmarks only; 0001 carries forward byte-identical",
       "tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
@@ -9831,14 +9852,14 @@ bin/spark --cluster-config config/cluster.json \
     {
       "kind": "git",
       "name": "sparknet",
-      "patch_count": null,
-      "patch_head": null,
-      "patch_series": null,
+      "patch_count": 1,
+      "patch_head": "f684d710ef99",
+      "patch_series": "experiments/2026-11-27-sparknet-order-fix/sparknet/series",
       "revision": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
-      "role": "sparknet 0.6.0 (PDL-chained one-shot kernels, multi-stage pipelined large collectives, pinned proxy) with SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 (vLLM 0710) restoring the 0.5.0 single-slot eligibility boundary so large SP prefill collectives keep the tuned PyNCCL path; a recorded -1.6% prefill residual at 131K is attributed to the 0.6.0 execution of <=4 MiB one-shot collectives, analysis deferred (owner, 2026-11-26)",
-      "tree": "1739407706277142da7a12c95fca3c503c8cb11c",
+      "role": "sparknet 0.6.0 (b01f350d: PDL-chained one-shot kernels, multi-stage pipelined large collectives, pinned proxy) + local series 0001 ordering eager collectives after graph replays (the captured<->eager boundary of the single-epoch/doorbell/two-slot transport; the 8-CTA cap only masked the race). Environment: SPARK_DS41F_ONESHOT_MAX_BYTES=4194304 (large SP prefill keeps the tuned PyNCCL path), SPARKNET_ROCE_COLLECTIVE_BLOCKS=0 (full width, safe with the ordering fix)",
+      "tree": "984254146ae2ccbfff6378800b628a4816606eb7",
       "upstream": "https://github.com/christopherowen/dgx-spark-networking.git",
-      "version": "0.6.0"
+      "version": "0.6.0+orderfix"
     }
   ]
 }

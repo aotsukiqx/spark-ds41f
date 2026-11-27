@@ -30,6 +30,17 @@ equal the 1127 production stack's) + `quality,decode,prefill` vs the 1127
 receipt; acceptance: prefill >= 8,625, decode 10/10 same, determinism
 identical, quality 5/5.
 
-## Results
+## Results (two clean boots, 2026-11-27)
 
-(to be filled)
+| measure | 1127 reference | boot 1 | boot 2 |
+|---|---:|---:|---:|
+| determinism | identical | **identical x2, hash 8e46794a (production canonical)** | identical, same hash |
+| quality | 5/5 | 5/5 | 5/5 |
+| decode grid | — | 10/10 same | 10/10 same |
+| prefill 131,072 (cooled) | 8,461.1 | **8,616.9 ±0.1% (+1.8%)** | **8,612.0 ±0.0% (+1.8%)** |
+
+**Verdict: qualified and promoted as spark-ds41f-1128.** The ordering fix
+closes the captured<->eager race (determinism back to the production
+canonical hash at full width, stable across three runs) and the staged
+path's full width takes the proven +1.8% prefill — at the 8,625.7 headroom
+within run noise. Receipt: boot 2's bench.

@@ -67,7 +67,7 @@ before tuning anything on this basis.
 ## Next release
 
 <!-- BEGIN GENERATED: next-release-status -->
-Production is **spark-ds41f-1127** (`manifests/baselines/2026-11-27-spark-ds41f-1127.json`, image `spark-ds41f:1127`), promoted 2026-11-27 on `tp4-ring` ([release record](experiments/2026-10-26-spark-ds41f-candidate/README.md), [suite reference](manifests/suites/2026-11-07-spark-ds41f-1107-tp4/)). `tp3-triangle`'s current qualified reference is **spark-ds41f-1107** ([suite reference](manifests/suites/2026-11-07-spark-ds41f-1107-tp3/)); qualifying `spark-ds41f-1127`'s image on the triangle at its 6,144-token prefill budget is queued once the three-node triangle is cabled (#668).
+Production is **spark-ds41f-1128** (`manifests/baselines/2026-11-27-spark-ds41f-1128.json`, image `spark-ds41f:1128`), promoted 2026-11-27 on `tp4-ring` ([release record](experiments/2026-10-26-spark-ds41f-candidate/README.md), [suite reference](manifests/suites/2026-11-07-spark-ds41f-1107-tp4/)). `tp3-triangle`'s current qualified reference is **spark-ds41f-1107** ([suite reference](manifests/suites/2026-11-07-spark-ds41f-1107-tp3/)); qualifying `spark-ds41f-1128`'s image on the triangle at its 6,144-token prefill budget is queued once the three-node triangle is cabled (#668).
 <!-- END GENERATED: next-release-status -->
 
 Before promoting `1107`:
@@ -86,7 +86,7 @@ Before promoting `1107`:
 ## Current reference
 
 <!-- BEGIN GENERATED: current-reference -->
-Active baseline manifest: [`manifests/baselines/2026-11-27-spark-ds41f-1127.json`](manifests/baselines/2026-11-27-spark-ds41f-1127.json) (`spark-ds41f-1127`). Releases are judged by the servebench release, single-stream and sampled suites (`docs/release-benchmark.md`, `scripts/servebench_suite_table.py`). Current benchmark references are [`manifests/suites/2026-11-07-spark-ds41f-1107-tp4`](manifests/suites/2026-11-07-spark-ds41f-1107-tp4/) for `tp4-ring` and [`manifests/suites/2026-11-07-spark-ds41f-1107-tp3`](manifests/suites/2026-11-07-spark-ds41f-1107-tp3/) for `tp3-triangle`:
+Active baseline manifest: [`manifests/baselines/2026-11-27-spark-ds41f-1128.json`](manifests/baselines/2026-11-27-spark-ds41f-1128.json) (`spark-ds41f-1128`). Releases are judged by the servebench release, single-stream and sampled suites (`docs/release-benchmark.md`, `scripts/servebench_suite_table.py`). Current benchmark references are [`manifests/suites/2026-11-07-spark-ds41f-1107-tp4`](manifests/suites/2026-11-07-spark-ds41f-1107-tp4/) for `tp4-ring` and [`manifests/suites/2026-11-07-spark-ds41f-1107-tp3`](manifests/suites/2026-11-07-spark-ds41f-1107-tp3/) for `tp3-triangle`:
 
 | Measure | `tp4-ring` (`spark-ds41f-1107`, 1M, 16 seqs, 16K batch) | `tp3-triangle` (`spark-ds41f-1107`, 1M, 8 seqs, 8K/6K batch) |
 | --- | ---: | ---: |
