@@ -5,7 +5,7 @@
   },
   "set": {
     "environment": {
-      "SPARKNET_ROCE_COLLECTIVE_BLOCKS": "0",
+      "SPARKNET_ROCE_COLLECTIVE_BLOCKS": "16",
       "SPARKNET_ROCE_STAGE_BYTES": "0"
     },
     "upstreams_config": "experiments/2026-11-27-sp-collective-blocks/upstreams.lock.json"
