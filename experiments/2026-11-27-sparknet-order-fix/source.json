@@ -3,7 +3,7 @@
   "captured_at": "2026-11-07",
   "vllm": {
     "base_revision": "6d66eed35b0ab1cc0e05f00e83ef638ba10ae3db",
-    "patch_series": "experiments/2026-11-27-sp-collective-blocks/vllm/series",
+    "patch_series": "experiments/2026-11-27-sparknet-order-fix/vllm/series",
     "patchset_sha256": "28917be97ff21b58d95b67c6fc3f001db6d57770bcf76836462b1fea55e0c813",
     "expected_tree": "fb383429d1da95180c8068e1c954e809698c17ea",
     "verification": "bin/spark build prepare applies the series to the pinned revision and checks this patch head and tree; image label local.spark-ds41f.vllm.tree matches",
@@ -172,7 +172,7 @@
   "deployment_artifacts": {},
   "tilelang": {
     "base_revision": "640fdcae3cd93620e5fcf98d36ee0ef7e17ae1f1",
-    "patch_series": "experiments/2026-11-27-sp-collective-blocks/tilelang/series",
+    "patch_series": "experiments/2026-11-27-sparknet-order-fix/tilelang/series",
     "patchset_sha256": "d49b6673d2e27c0b8438f0c706838993b4435938e799e86c000b5541d8e3ee4f",
     "patch_head": "bdd4cad90fd1c695578d5580c0f4b94e4dd2060f",
     "expected_tree": "85daad439e0e6e8182a09c3d9ed685bc2cac1d42",
@@ -194,7 +194,7 @@
   },
   "tile_kernels": {
     "base_revision": "c1cf914a82e6901c679445f872051ce44ac2cc63",
-    "patch_series": "experiments/2026-11-27-sp-collective-blocks/tile_kernels/series",
+    "patch_series": "experiments/2026-11-27-sparknet-order-fix/tile_kernels/series",
     "patchset_sha256": "3fed91bbd083d38b08de1bd7ebe25dbc7aec9d36f4e2b8f7adbfb497b128c22c",
     "patch_head": "9040550b03aaba46835a46723190fa54a8e2632e",
     "expected_tree": "8386508bc3dcfc19eabc6cde1eb7016824a1bd6e",
@@ -202,10 +202,10 @@
   },
   "sparknet": {
     "base_revision": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
-    "patch_series": null,
-    "patchset_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "patch_head": "b01f350d061a6434c2186df73fa568ab4a9e4aa0",
-    "expected_tree": "1739407706277142da7a12c95fca3c503c8cb11c",
+    "patch_series": "experiments/2026-11-27-sparknet-order-fix/sparknet/series",
+    "patchset_sha256": "a8ce57c80c0fdf988d7d3a9ab5c8152251deed45213e4d9c4971a18f301b8b6d",
+    "patch_head": "f684d710ef9947e0518637496d029da2609197b1",
+    "expected_tree": "984254146ae2ccbfff6378800b628a4816606eb7",
     "verification": "bin/spark3 build prepare checks out the pinned revision and checks this tree; image label local.spark3.sparknet.tree matches, and the image build checks the installed package version and builds the proxy"
   }
 }
